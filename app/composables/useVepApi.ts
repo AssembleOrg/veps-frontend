@@ -7,7 +7,12 @@ import type {
   SearchFilesResponse,
   RenameFileResponse,
   GenerateFolderNameResponse,
-  RenameFileRequest
+  RenameFileRequest,
+  VepUser,
+  CreateVepUserDto,
+  UpdateVepUserDto,
+  PaginatedResponse,
+  DeleteVepUserResponse
 } from '~/types/api'
 
 export const useVepApi = () => {
@@ -203,6 +208,68 @@ export const useVepApi = () => {
     }
   }
 
+  // 👥 VEP Users API Functions
+  
+  // Obtener usuarios paginados
+  const getVepUsersPaginated = async (page: number = 1, limit: number = 10): Promise<PaginatedResponse<VepUser>> => {
+    return handleApiCall(() =>
+      fetch(`${baseURL}/vep-users/paginated?page=${page}&limit=${limit}`, { 
+        headers: getAuthHeaders() 
+      })
+    )
+  }
+
+  // Crear usuario VEP
+  const createVepUser = async (userData: CreateVepUserDto): Promise<VepUser> => {
+    return handleApiCall(() =>
+      fetch(`${baseURL}/vep-users`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(userData),
+      })
+    )
+  }
+
+  // Obtener usuario por ID
+  const getVepUserById = async (id: number): Promise<VepUser> => {
+    return handleApiCall(() =>
+      fetch(`${baseURL}/vep-users/${id}`, { 
+        headers: getAuthHeaders() 
+      })
+    )
+  }
+
+  // Actualizar usuario VEP
+  const updateVepUser = async (id: number, userData: UpdateVepUserDto): Promise<VepUser> => {
+    return handleApiCall(() =>
+      fetch(`${baseURL}/vep-users/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(userData),
+      })
+    )
+  }
+
+  // Eliminar usuario VEP
+  const deleteVepUser = async (id: number): Promise<DeleteVepUserResponse> => {
+    return handleApiCall(() =>
+      fetch(`${baseURL}/vep-users/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      })
+    )
+  }
+
+  // Buscar usuarios VEP
+  const searchVepUsers = async (term: string, field?: string): Promise<VepUser[]> => {
+    let url = `${baseURL}/vep-users/search?term=${encodeURIComponent(term)}`
+    if (field) {
+      url += `&field=${encodeURIComponent(field)}`
+    }
+    
+    return handleApiCall(() => fetch(url, { headers: getAuthHeaders() }))
+  }
+
   return {
     createFolder,
     checkFolderExists,
@@ -215,6 +282,13 @@ export const useVepApi = () => {
     createFolderSafely,
     downloadFileByKey,
     downloadFileByName,
-    getQrCode
+    getQrCode,
+    // VEP Users functions
+    getVepUsersPaginated,
+    createVepUser,
+    getVepUserById,
+    updateVepUser,
+    deleteVepUser,
+    searchVepUsers
   }
 } 

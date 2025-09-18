@@ -85,4 +85,67 @@ export interface SearchForm {
 export interface RenameForm {
   oldKey: string;
   newKey: string;
+}
+
+// VEP Users Types
+export interface VepUser {
+  id: number
+  alter_name: string
+  cuit: string | null
+  execution_date: string | null
+  is_group: boolean
+  last_execution: string | null
+  mobile_number: string
+  need_papers: boolean | null
+  need_z: boolean | null
+  need_compra: boolean | null
+  need_auditoria: boolean | null
+  real_name: string
+  joined_with: string | null
+  joined_cuit: string | null
+}
+
+export interface CreateVepUserDto {
+  alter_name: string
+  cuit?: string | null
+  execution_date?: string | null
+  is_group?: boolean
+  last_execution?: string | null
+  mobile_number: string
+  need_papers?: boolean | null
+  need_z?: boolean | null
+  need_compra?: boolean | null
+  need_auditoria?: boolean | null
+  real_name: string
+  joined_with?: string | null
+  joined_cuit?: string | null
+}
+
+export interface UpdateVepUserDto {
+  alter_name?: string
+  cuit?: string | null
+  execution_date?: string | null
+  is_group?: boolean
+  last_execution?: string | null
+  mobile_number?: string
+  need_papers?: boolean | null
+  need_z?: boolean | null
+  need_compra?: boolean | null
+  need_auditoria?: boolean | null
+  real_name?: string
+  joined_with?: string | null
+  joined_cuit?: string | null
+}
+
+export interface PaginatedResponse<T> {
+  data: T[]
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+}
+
+export interface DeleteVepUserResponse {
+  success: boolean
+  message: string
 } 

@@ -43,7 +43,12 @@
                     alt="Usuario"
                     size="sm"
                   />
+                  <ClientOnly>
                   <span class="hidden md:block text-sm font-medium">{{ user?.email || 'Usuario' }}</span>
+                    <template #fallback>
+                      <span class="hidden md:block text-sm font-medium">Usuario</span>
+                    </template>
+                  </ClientOnly>
                   <UIcon 
                     name="i-heroicons-chevron-down" 
                     class="w-4 h-4 transition-transform"
@@ -74,7 +79,12 @@
               size="sm"
             />
             <div>
+              <ClientOnly>
               <p class="font-medium text-gray-900 dark:text-white">{{ user?.email || 'Usuario' }}</p>
+                <template #fallback>
+                  <p class="font-medium text-gray-900 dark:text-white">Usuario</p>
+                </template>
+              </ClientOnly>
               <p class="text-sm text-gray-500 dark:text-gray-400">Contador VEP</p>
             </div>
           </div>
@@ -103,7 +113,7 @@
       </div>
 
       <!-- Stats Cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 sm:mb-8">
+      <!-- <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 sm:mb-8">
         <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div class="flex items-center">
             <div class="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
@@ -151,7 +161,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
 
       <!-- Action Tabs -->
       <div class="mb-6">
@@ -558,6 +568,292 @@
           </UCard>
         </div>
 
+        <!-- Users Tab -->
+        <div v-if="activeTab === 'users'" class="space-y-6">
+          <UCard>
+            <template #header>
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    Gestión de Usuarios VEP
+              </h3>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    Administra los usuarios del sistema VEP
+                  </p>
+                </div>
+                <UButton
+                  @click="openUserModal()"
+                  size="lg"
+                  class="w-full sm:w-auto"
+                >
+                  <UIcon name="i-heroicons-plus" class="w-4 h-4 mr-2" />
+                  Nuevo Usuario
+                </UButton>
+              </div>
+            </template>
+
+            <!-- Loading State -->
+            <div v-if="usersLoading" class="flex items-center justify-center py-12">
+              <div class="text-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Cargando usuarios...</p>
+              </div>
+            </div>
+
+            <!-- Search and Filters -->
+            <div v-if="!usersLoading" class="space-y-4 mb-6">
+              <div class="flex flex-col sm:flex-row gap-4">
+                <div class="flex-1">
+                <UInput
+                    v-model="searchTerm"
+                    placeholder="Buscar usuarios... (ej: Juan, 12345678, +54911)"
+                    icon="i-heroicons-magnifying-glass"
+                    @input="handleUserSearch"
+                    class="w-full"
+                />
+              </div>
+              <div>
+                  <USelect
+                    v-model="searchField"
+                    :items="searchFieldOptions"
+                    placeholder="Campo"
+                    class="w-40"
+                    @update:model-value="handleUserSearch"
+                  />
+                </div>
+              </div>
+
+              <div v-if="searchTerm" class="flex items-center justify-between">
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  <template v-if="isSearching">
+                    Buscando "{{ searchTerm }}"...
+                  </template>
+                  <template v-else>
+                    Resultados para "{{ searchTerm }}" {{ searchField !== 'Todos los campos' ? `en ${searchField.toLowerCase()}` : 'en todos los campos' }}
+                  </template>
+                </p>
+                <UButton variant="ghost" size="sm" @click="clearUserSearch">
+                  <UIcon name="i-heroicons-x-mark" class="w-4 h-4 mr-1" />
+                  Limpiar
+                </UButton>
+              </div>
+            </div>
+
+            <!-- Users List -->
+            <div v-if="users.length > 0" class="space-y-4">
+              <!-- Desktop Table -->
+              <div class="hidden md:block overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead class="bg-gray-50 dark:bg-gray-800">
+                    <tr>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Usuario
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Contacto
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        CUIT
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Tipo
+                      </th>
+                      <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Acciones
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                    <tr v-for="user in users" :key="user.id" class="hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <td class="px-6 py-4">
+                        <div>
+                          <div class="text-sm font-medium text-gray-900 dark:text-white">
+                            Apodo: {{ user.alter_name }}
+                          </div>
+                          <div class="text-sm text-gray-500 dark:text-gray-400">
+                            {{ user.real_name }}
+                          </div>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <div class="text-sm text-gray-900 dark:text-white">
+                          {{ user.mobile_number }}
+                        </div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <div class="text-sm text-gray-900 dark:text-white">
+                          {{ user.cuit || '-' }}
+                        </div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <span :class="[
+                          'inline-flex px-2 py-1 text-xs font-semibold rounded-full',
+                          user.is_group 
+                            ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                            : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        ]">
+                          {{ user.is_group ? 'Grupo' : 'Individual' }}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4 text-right">
+                        <div class="flex items-center justify-end space-x-2">
+              <UButton
+                            variant="ghost"
+                            size="sm"
+                            @click="openUserModal(user)"
+                            title="Editar"
+                          >
+                            <UIcon name="i-heroicons-pencil" class="w-4 h-4" />
+                          </UButton>
+                          <UButton
+                            variant="ghost"
+                            size="sm"
+                            color="red"
+                            @click="confirmDelete(user)"
+                            title="Eliminar"
+                          >
+                            <UIcon name="i-heroicons-trash" class="w-4 h-4" />
+                          </UButton>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Mobile Cards -->
+              <div class="md:hidden space-y-4">
+                <div v-for="user in users" :key="user.id" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                  <div class="flex items-start justify-between mb-3">
+                    <div class="flex-1">
+                      <h4 class="text-sm font-medium text-gray-900 dark:text-white">
+                        {{ user.alter_name }}
+                      </h4>
+                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {{ user.real_name }}
+                      </p>
+                    </div>
+                    <span :class="[
+                      'inline-flex px-2 py-1 text-xs font-semibold rounded-full ml-2',
+                      user.is_group 
+                        ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                        : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                    ]">
+                      {{ user.is_group ? 'Grupo' : 'Individual' }}
+                    </span>
+                  </div>
+                  
+                  <div class="space-y-2 mb-4">
+                    <div class="flex items-center text-sm">
+                      <UIcon name="i-heroicons-phone" class="w-4 h-4 text-gray-400 mr-2" />
+                      <span class="text-gray-900 dark:text-white">{{ user.mobile_number }}</span>
+                    </div>
+                    <div class="flex items-center text-sm">
+                      <UIcon name="i-heroicons-identification" class="w-4 h-4 text-gray-400 mr-2" />
+                      <span class="text-gray-900 dark:text-white">{{ user.cuit || 'Sin CUIT' }}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="flex items-center justify-end space-x-2">
+                    <UButton
+                      variant="outline"
+                      size="sm"
+                      @click="openUserModal(user)"
+                    >
+                      <UIcon name="i-heroicons-pencil" class="w-4 h-4 mr-1" />
+                      Editar
+                    </UButton>
+                    <UButton
+                      variant="outline"
+                      size="sm"
+                      color="red"
+                      @click="confirmDelete(user)"
+                    >
+                      <UIcon name="i-heroicons-trash" class="w-4 h-4 mr-1" />
+                      Eliminar
+                    </UButton>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Search Results Info -->
+              <div v-if="searchTerm.trim()" class="flex items-center justify-center pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div class="text-sm text-gray-700 dark:text-gray-300">
+                  {{ totalUsers }} resultado{{ totalUsers !== 1 ? 's' : '' }} encontrado{{ totalUsers !== 1 ? 's' : '' }}
+                </div>
+              </div>
+
+              <!-- Pagination -->
+              <div v-if="!searchTerm.trim()" class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex flex-col sm:flex-row items-center gap-4">
+                  <div class="text-sm text-gray-700 dark:text-gray-300">
+                    Mostrando {{ (currentPage - 1) * pageSize + 1 }} a {{ Math.min(currentPage * pageSize, totalUsers) }} de {{ totalUsers }} usuarios
+                  </div>
+                  <!-- <USelect
+                    v-model="pageSize"
+                    :items="pageSizeOptions"
+                    class="w-36"
+                    value-attribute="value"
+                    option-attribute="label"
+                    @update:model-value="handlePageSizeChange"
+                  /> -->
+                </div>
+                <div class="flex items-center space-x-2">
+                  <UButton
+                    variant="outline"
+                    size="sm"
+                    :disabled="currentPage <= 1"
+                    @click="changePage(currentPage - 1)"
+                  >
+                    <UIcon name="i-heroicons-chevron-left" class="w-4 h-4" />
+                    Anterior
+                  </UButton>
+                  
+                  <div class="flex items-center space-x-1">
+                    <template v-for="page in getVisiblePages()" :key="page">
+                      <UButton
+                        v-if="page !== '...'"
+                        :variant="page === currentPage ? 'solid' : 'outline'"
+                        size="sm"
+                        @click="changePage(page)"
+                        class="min-w-[2rem]"
+                      >
+                        {{ page }}
+                      </UButton>
+                      <span v-else class="px-2 text-gray-500">...</span>
+                    </template>
+                  </div>
+                  
+                  <UButton
+                    variant="outline"
+                    size="sm"
+                    :disabled="currentPage >= totalPages"
+                    @click="changePage(currentPage + 1)"
+                  >
+                    Siguiente
+                    <UIcon name="i-heroicons-chevron-right" class="w-4 h-4" />
+                  </UButton>
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty State -->
+            <div v-else class="text-center py-12">
+              <UIcon name="i-heroicons-users" class="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                No hay usuarios
+              </h3>
+              <p class="text-gray-500 dark:text-gray-400 mb-6">
+                Comienza creando tu primer usuario VEP.
+              </p>
+              <UButton @click="openUserModal()">
+                <UIcon name="i-heroicons-plus" class="w-4 h-4 mr-2" />
+                Crear Usuario
+              </UButton>
+            </div>
+          </UCard>
+        </div>
+
         <!-- QR Tab -->
         <div v-if="activeTab === 'qr'" class="space-y-4">
           <UCard>
@@ -575,12 +871,12 @@
                 
                 <UButton
                   @click="showQrConfirmation = true"
-                  size="lg"
+                size="lg"
                   class="w-full sm:w-auto"
-                >
+              >
                   <UIcon name="i-heroicons-qr-code" class="w-5 h-5 mr-2" />
                   Mostrar Código QR
-                </UButton>
+              </UButton>
               </div>
             </div>
           </UCard>
@@ -628,62 +924,63 @@
 
     <!-- File Viewer Modal - Moved outside main -->
     <div v-if="showViewer" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4" style="z-index: 9999 !important;">
-      <div class="bg-white dark:bg-gray-900 rounded-lg w-full max-w-5xl h-[80vh] overflow-hidden flex flex-col">
-        <div class="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700">
-          <div class="flex items-center space-x-3">
-            <UIcon name="i-heroicons-document" class="w-5 h-5 text-gray-500" />
-            <div class="min-w-0">
-              <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ viewerFileName }}</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">{{ viewerFileType || '' }}</p>
+          <div class="bg-white dark:bg-gray-900 rounded-lg w-full max-w-5xl h-[80vh] overflow-hidden flex flex-col">
+            <div class="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700">
+              <div class="flex items-center space-x-3">
+                <UIcon name="i-heroicons-document" class="w-5 h-5 text-gray-500" />
+                <div class="min-w-0">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ viewerFileName }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ viewerFileType || '' }}</p>
+                </div>
+              </div>
+              <div class="flex items-center space-x-2">
+                <UButton variant="ghost" size="sm" @click="downloadViewerFile">
+                  <UIcon name="i-heroicons-arrow-down" class="w-4 h-4" />
+                </UButton>
+                <UButton variant="ghost" size="sm" @click="closeViewer">Cerrar</UButton>
+              </div>
             </div>
-          </div>
-          <div class="flex items-center space-x-2">
-            <UButton variant="ghost" size="sm" @click="downloadViewerFile">
-              <UIcon name="i-heroicons-arrow-down" class="w-4 h-4" />
-            </UButton>
-            <UButton variant="ghost" size="sm" @click="closeViewer">Cerrar</UButton>
-          </div>
-        </div>
 
-        <div class="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-800 overflow-auto">
-          <template v-if="viewerBlobUrl">
-            <!-- PDF and other embeddable types -->
-            <iframe v-if="isPdf(viewerFileName)" :src="viewerBlobUrl" class="w-full h-full" />
+            <div class="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-800 overflow-auto">
+              <template v-if="viewerBlobUrl">
+                <!-- PDF and other embeddable types -->
+                <iframe v-if="isPdf(viewerFileName)" :src="viewerBlobUrl" class="w-full h-full" />
 
-            <!-- Images -->
-            <img v-else-if="isImage(viewerFileName)" :src="viewerBlobUrl" class="max-w-full max-h-full object-contain" />
+                <!-- Images -->
+                <img v-else-if="isImage(viewerFileName)" :src="viewerBlobUrl" class="max-w-full max-h-full object-contain" />
 
-            <!-- Text/JSON/XML -->
-            <pre v-else-if="isText(viewerFileName)" class="whitespace-pre-wrap p-4 text-sm overflow-auto w-full h-full">{{ viewerText }}</pre>
+                <!-- Text/JSON/XML -->
+                <pre v-else-if="isText(viewerFileName)" class="whitespace-pre-wrap p-4 text-sm overflow-auto w-full h-full">{{ viewerText }}</pre>
 
-            <!-- Fallback: show download link -->
-            <div v-else class="p-4 text-center">
+                <!-- Fallback: show download link -->
+                <div v-else class="p-4 text-center">
               <p class="mb-3 text-gray-600 dark:text-gray-400">Previsualización no disponible para este tipo de archivo.</p>
-              <UButton @click="downloadViewerFile">Descargar archivo</UButton>
-            </div>
-          </template>
+                  <UButton @click="downloadViewerFile">Descargar archivo</UButton>
+                </div>
+              </template>
           <div v-else class="p-6 text-sm text-gray-500 dark:text-gray-400">Cargando...</div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
 
     <!-- QR Confirmation Modal -->
-    <div v-if="showQrConfirmation" class="fixed inset-0 z-70 flex items-center justify-center bg-black/50">
-      <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
-        <div class="text-center">
-          <div class="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
-            <UIcon name="i-heroicons-chat-bubble-left-right" class="w-8 h-8 text-green-600 dark:text-green-400" />
-          </div>
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+    <div v-if="showQrConfirmation" class="fixed inset-0 z-70 flex items-center justify-center bg-black/60 p-4">
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xl w-full max-w-md mx-4">
+        <div class="p-6 text-center">
+          <div class="mx-auto w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-4">
+            <UIcon name="i-heroicons-chat-bubble-left-right" class="w-8 h-8 text-blue-600 dark:text-blue-400" />
+      </div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">
             Confirmar Conexión WhatsApp
           </h3>
-          <p class="text-gray-600 dark:text-gray-400 mb-6">
+          <p class="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
             ¿Vas a abrir una conexión vía WhatsApp? ¿Estás seguro?
           </p>
-          <div class="flex space-x-3">
+          <div class="flex gap-3">
             <UButton
               @click="cancelQrGeneration"
               variant="outline"
+              size="lg"
               class="flex-1"
             >
               Cancelar
@@ -691,8 +988,8 @@
             <UButton
               @click="confirmQrGeneration"
               :loading="qrLoading"
+              size="lg"
               class="flex-1"
-              color="green"
             >
               <UIcon name="i-heroicons-check" class="w-4 h-4 mr-2" />
               Confirmar
@@ -704,30 +1001,274 @@
 
     <!-- QR Code Display Modal -->
     <div v-if="showQrCode" class="fixed inset-0 z-70 flex items-center justify-center bg-black/60 p-4">
-      <div class="bg-white dark:bg-gray-900 rounded-lg w-full max-w-md overflow-hidden">
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xl w-full max-w-md overflow-hidden">
         <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white">
             Código QR WhatsApp
           </h3>
           <UButton variant="ghost" size="sm" @click="closeQrCode">
-            <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
+            <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
           </UButton>
         </div>
         
         <div class="p-6 text-center">
-          <div v-if="qrImageUrl" class="mb-4">
+          <div v-if="qrImageUrl" class="mb-6">
             <img 
               :src="qrImageUrl" 
               alt="Código QR para WhatsApp"
-              class="mx-auto max-w-full h-auto rounded-lg shadow-sm"
+              class="mx-auto max-w-full h-auto rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
             />
           </div>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          <p class="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
             Escanea este código con WhatsApp para establecer la conexión
           </p>
-          <UButton @click="closeQrCode" variant="outline" class="w-full">
+          <UButton @click="closeQrCode" variant="outline" size="lg" class="w-full">
+            <UIcon name="i-heroicons-x-mark" class="w-4 h-4 mr-2" />
             Cerrar
           </UButton>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Modal (Create/Edit) -->
+    <div v-if="showUserModal" class="fixed inset-0 z-70 flex items-center justify-center bg-black/60 p-4">
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+            {{ editingUser ? 'Editar Usuario' : 'Crear Usuario' }}
+          </h3>
+          <UButton variant="ghost" size="sm" @click="closeUserModal">
+            <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
+          </UButton>
+        </div>
+        
+        <form @submit.prevent="handleSaveUser" class="p-6 space-y-6">
+          <!-- Información básica -->
+          <div class="space-y-4">
+            <h4 class="text-md font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+              Información Básica
+            </h4>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Nombre Alternativo <span class="text-red-500">*</span>
+                </label>
+                <UInput
+                  v-model="userForm.alter_name"
+                  placeholder="Juan Pérez"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Nombre Real <span class="text-red-500">*</span>
+                </label>
+                <UInput
+                  v-model="userForm.real_name"
+                  placeholder="Juan Carlos Pérez"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Teléfono Móvil <span class="text-red-500">*</span>
+                </label>
+                <UInput
+                  v-model="userForm.mobile_number"
+                  placeholder="+5491123456789"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  CUIT
+                </label>
+                <UInput
+                  v-model="userForm.cuit"
+                  placeholder="20-12345678-9"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Configuración -->
+          <div class="space-y-4">
+            <h4 class="text-md font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+              Configuración
+            </h4>
+            
+            <div class="flex items-center space-x-3">
+              <UCheckbox
+                v-model="userForm.is_group"
+                :binary="true"
+              />
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Es un grupo
+              </label>
+            </div>
+          </div>
+
+          <!-- Requerimientos -->
+          <div class="space-y-4">
+            <h4 class="text-md font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+              Requerimientos
+            </h4>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="flex items-center space-x-3">
+                <UCheckbox
+                  v-model="userForm.need_papers"
+                  :binary="true"
+                />
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Necesita papeles
+                </label>
+              </div>
+              
+              <div class="flex items-center space-x-3">
+                <UCheckbox
+                  v-model="userForm.need_z"
+                  :binary="true"
+                />
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Necesita cierre Z
+                </label>
+              </div>
+              
+              <div class="flex items-center space-x-3">
+                <UCheckbox
+                  v-model="userForm.need_compra"
+                  :binary="true"
+                />
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Necesita factura de compra
+                </label>
+              </div>
+              
+              <div class="flex items-center space-x-3">
+                <UCheckbox
+                  v-model="userForm.need_auditoria"
+                  :binary="true"
+                />
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Necesita auditoría
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Asociaciones -->
+          <div class="space-y-4">
+            <h4 class="text-md font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+              Asociaciones
+            </h4>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Asociado con
+                </label>
+                <UInput
+                  v-model="userForm.joined_with"
+                  placeholder="Nombre del usuario asociado"
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  CUIT Asociado
+                </label>
+                <UInput
+                  v-model="userForm.joined_cuit"
+                  placeholder="20-87654321-9"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Fechas -->
+          <!-- <div class="space-y-4">
+            <h4 class="text-md font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+              Fechas
+            </h4>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Fecha de ejecución
+                </label>
+                <UInput
+                  v-model="userForm.execution_date"
+                  type="date"
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Última ejecución
+                </label>
+                <UInput
+                  v-model="userForm.last_execution"
+                  type="date"
+                />
+              </div>
+            </div>
+          </div> -->
+
+          <!-- Buttons -->
+          <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <UButton variant="outline" @click="closeUserModal" :disabled="userModalLoading">
+              Cancelar
+            </UButton>
+            <UButton type="submit" :loading="userModalLoading">
+              <UIcon name="i-heroicons-check" class="w-4 h-4 mr-2" />
+              {{ editingUser ? 'Actualizar' : 'Crear' }}
+            </UButton>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div v-if="showDeleteConfirm" class="fixed inset-0 z-70 flex items-center justify-center bg-black/60 p-4">
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xl w-full max-w-md mx-4">
+        <div class="p-6 text-center">
+          <div class="mx-auto w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4">
+            <UIcon name="i-heroicons-exclamation-triangle" class="w-8 h-8 text-red-600 dark:text-red-400" />
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">
+            Confirmar Eliminación
+          </h3>
+          <p class="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
+            ¿Estás seguro de que deseas eliminar al usuario <strong>{{ deletingUser?.alter_name }}</strong>? Esta acción no se puede deshacer.
+          </p>
+          <div class="flex gap-3">
+            <UButton
+              @click="cancelDelete"
+              variant="outline"
+              size="lg"
+              class="flex-1"
+              :disabled="deleteLoading"
+            >
+              Cancelar
+            </UButton>
+            <UButton
+              @click="handleDeleteUser"
+              size="lg"
+              color="red"
+              class="flex-1"
+              :loading="deleteLoading"
+            >
+              <UIcon name="i-heroicons-trash" class="w-4 h-4 mr-2" />
+              Eliminar
+            </UButton>
+          </div>
         </div>
       </div>
     </div>
@@ -738,7 +1279,7 @@
 <script setup lang="ts">
 import { useVepApi } from '~/composables/useVepApi'
 import { useAuth } from '../composables/useAuth'
-import type { FolderContents, FolderItem } from '~/types/api'
+import type { FolderContents, FolderItem, VepUser, CreateVepUserDto, UpdateVepUserDto, PaginatedResponse } from '~/types/api'
 
 // Page meta
 definePageMeta({
@@ -759,12 +1300,71 @@ const showQrCode = ref(false)
 const qrImageUrl = ref<string | null>(null)
 const qrLoading = ref(false)
 
+// VEP Users state
+const users = ref<VepUser[]>([])
+const usersLoading = ref(false)
+const currentPage = ref(1)
+const pageSize = ref(10)
+const totalUsers = ref(0)
+const totalPages = ref(0)
+const showUserModal = ref(false)
+const showDeleteConfirm = ref(false)
+const editingUser = ref<VepUser | null>(null)
+const deletingUser = ref<VepUser | null>(null)
+const searchTerm = ref('')
+const searchField = ref<string>('Todos los campos')
+const isSearching = ref(false)
+const userModalLoading = ref(false)
+const deleteLoading = ref(false)
+
+// Page size options
+const pageSizeOptions = [
+  { label: '10 por página', value: 10 },
+  { label: '20 por página', value: 20 },
+  { label: '50 por página', value: 50 },
+  { label: '100 por página', value: 100 },
+  { label: '200 por página', value: 200 }
+]
+
+// Search field options
+const searchFieldOptions = [
+  'Todos los campos',
+  'Nombre real', 
+  'Nombre alternativo',
+  'Teléfono móvil',
+  'CUIT'
+]
+
+const searchFieldMap = {
+  'Todos los campos': '',
+  'Nombre real': 'real_name',
+  'Nombre alternativo': 'alter_name', 
+  'Teléfono móvil': 'mobile_number',
+  'CUIT': 'cuit'
+}
+const userForm = reactive<CreateVepUserDto>({
+  alter_name: '',
+  real_name: '',
+  mobile_number: '',
+  cuit: null,
+  execution_date: null,
+  is_group: false,
+  last_execution: null,
+  need_papers: null,
+  need_z: null,
+  need_compra: null,
+  need_auditoria: null,
+  joined_with: null,
+  joined_cuit: null
+})
+
 // Tab system
 const activeTab = ref('create')
 const tabs = [
   { id: 'create', label: 'Crear Carpeta', shortLabel: 'Crear', icon: 'i-heroicons-folder-plus' },
   { id: 'search', label: 'Buscar', shortLabel: 'Buscar', icon: 'i-heroicons-magnifying-glass' },
   { id: 'upload', label: 'Subir Archivos', shortLabel: 'Subir', icon: 'i-heroicons-cloud-arrow-up' },
+  { id: 'users', label: 'Usuarios', shortLabel: 'Usuarios', icon: 'i-heroicons-users' },
   { id: 'qr', label: 'QR', shortLabel: 'QR', icon: 'i-heroicons-qr-code' }
 ]
 
@@ -938,7 +1538,25 @@ watch(activeTab, async (newTab, oldTab) => {
       // Silenciar; loadFolders ya notifica con toast en caso de error
     }
   }
+
+  // Si entramos a la pestaña de usuarios, cargar usuarios
+  if (newTab === 'users' && users.value.length === 0) {
+    try {
+      await loadUsers()
+    } catch (e) {
+      // Silenciar; loadUsers ya notifica con toast en caso de error
+    }
+  }
 })
+
+// Watch pageSize changes
+watch(pageSize, async (newSize, oldSize) => {
+  console.log('PageSize watcher triggered:', oldSize, '->', newSize)
+  if (oldSize !== newSize && activeTab.value === 'users') {
+    currentPage.value = 1
+    await loadUsers()
+  }
+}, { immediate: false })
 
 watch([() => createForm.month, () => createForm.year], async ([month, year]) => {
   if (month && year) {
@@ -1466,5 +2084,260 @@ function closeQrCode() {
     URL.revokeObjectURL(qrImageUrl.value)
     qrImageUrl.value = null
   }
+}
+
+// VEP Users functions
+async function loadUsers() {
+  console.log('Loading users with pageSize:', pageSize.value, 'currentPage:', currentPage.value)
+  usersLoading.value = true
+  
+  try {
+    if (searchTerm.value.trim()) {
+      // Si hay búsqueda, usar el endpoint de search
+      const fieldValue = searchFieldMap[searchField.value] || ''
+      const searchResults = await vepApi.searchVepUsers(searchTerm.value, fieldValue || undefined)
+      users.value = searchResults
+      totalUsers.value = searchResults.length
+      totalPages.value = 1 // Search no tiene paginación
+      console.log('Search results loaded:', searchResults.length, 'users with field:', fieldValue)
+    } else {
+      // Carga normal con paginación
+      const response = await vepApi.getVepUsersPaginated(currentPage.value, pageSize.value)
+      users.value = response.data
+      totalUsers.value = response.total
+      totalPages.value = response.totalPages
+      console.log('Paginated users loaded:', response.data.length, 'users, total:', response.total)
+    }
+  } catch (error: any) {
+    console.error('Error loading users:', error)
+    toast.add({
+      title: 'Error',
+      description: error.message || 'Error al cargar usuarios',
+      color: 'error'
+    })
+  } finally {
+    usersLoading.value = false
+  }
+}
+
+// User search functions
+let userSearchTimeout: NodeJS.Timeout | null = null
+
+function handleUserSearch() {
+  console.log('Search triggered with field:', searchField.value, 'term:', searchTerm.value)
+  if (userSearchTimeout) {
+    clearTimeout(userSearchTimeout)
+  }
+  
+  userSearchTimeout = setTimeout(async () => {
+    currentPage.value = 1
+    isSearching.value = true
+    await loadUsers()
+    isSearching.value = false
+  }, 300) // Debounce 300ms
+}
+
+function clearUserSearch() {
+  searchTerm.value = ''
+  searchField.value = 'Todos los campos'
+  currentPage.value = 1
+  loadUsers()
+}
+
+async function handlePageSizeChange() {
+  console.log('Page size changed to:', pageSize.value)
+  currentPage.value = 1
+  await loadUsers()
+}
+
+function openUserModal(user?: VepUser) {
+  if (user) {
+    editingUser.value = user
+    Object.assign(userForm, user)
+  } else {
+    editingUser.value = null
+    resetUserForm()
+  }
+  showUserModal.value = true
+}
+
+function resetUserForm() {
+  Object.assign(userForm, {
+    alter_name: '',
+    real_name: '',
+    mobile_number: '',
+    cuit: null,
+    execution_date: null,
+    is_group: false,
+    last_execution: null,
+    need_papers: null,
+    need_z: null,
+    need_compra: null,
+    need_auditoria: null,
+    joined_with: null,
+    joined_cuit: null
+  })
+}
+
+function closeUserModal() {
+  showUserModal.value = false
+  editingUser.value = null
+  resetUserForm()
+}
+
+async function handleSaveUser() {
+  if (!userForm.alter_name.trim() || !userForm.real_name.trim() || !userForm.mobile_number.trim()) {
+    toast.add({
+      title: 'Error',
+      description: 'Los campos obligatorios deben estar completos',
+      color: 'error'
+    })
+    return
+  }
+
+  userModalLoading.value = true
+  
+  try {
+    if (editingUser.value) {
+      // Actualizar usuario existente
+      const updatedUser = await vepApi.updateVepUser(editingUser.value.id, userForm)
+      
+      // Actualizar en la lista local
+      const index = users.value.findIndex(u => u.id === editingUser.value!.id)
+      if (index !== -1) {
+        users.value[index] = updatedUser
+      }
+      
+      toast.add({
+        title: 'Usuario actualizado',
+        description: `${updatedUser.alter_name} ha sido actualizado exitosamente`,
+        color: 'success'
+      })
+    } else {
+      // Crear nuevo usuario
+      const newUser = await vepApi.createVepUser(userForm)
+      
+      // Si no estamos en búsqueda y estamos en la primera página, agregar al principio
+      if (!searchTerm.value.trim() && currentPage.value === 1) {
+        users.value.unshift(newUser)
+        // Si excede el pageSize, quitar el último
+        if (users.value.length > pageSize.value) {
+          users.value.pop()
+        }
+      }
+      
+      // Actualizar totales
+      totalUsers.value += 1
+      totalPages.value = Math.ceil(totalUsers.value / pageSize.value)
+      
+      toast.add({
+        title: 'Usuario creado',
+        description: `${newUser.alter_name} ha sido creado exitosamente`,
+        color: 'success'
+      })
+    }
+    
+    closeUserModal()
+  } catch (error: any) {
+    toast.add({
+      title: 'Error',
+      description: error.message || 'Error al guardar usuario',
+      color: 'error'
+    })
+  } finally {
+    userModalLoading.value = false
+  }
+}
+
+function cancelDelete() {
+  showDeleteConfirm.value = false
+  deletingUser.value = null
+}
+
+async function handleDeleteUser() {
+  if (!deletingUser.value) return
+  
+  deleteLoading.value = true
+  
+  try {
+    await vepApi.deleteVepUser(deletingUser.value.id)
+    
+    // Remover de la lista local
+    users.value = users.value.filter(u => u.id !== deletingUser.value!.id)
+    
+    // Actualizar totales
+    totalUsers.value -= 1
+    totalPages.value = Math.ceil(totalUsers.value / pageSize.value)
+    
+    // Si la página actual está vacía y no es la primera, ir a la anterior
+    if (users.value.length === 0 && currentPage.value > 1) {
+      currentPage.value -= 1
+      await loadUsers()
+    }
+    
+    toast.add({
+      title: 'Usuario eliminado',
+      description: `${deletingUser.value.alter_name} ha sido eliminado exitosamente`,
+      color: 'success'
+    })
+    
+    cancelDelete()
+  } catch (error: any) {
+    toast.add({
+      title: 'Error',
+      description: error.message || 'Error al eliminar usuario',
+      color: 'error'
+    })
+  } finally {
+    deleteLoading.value = false
+  }
+}
+
+function confirmDelete(user: VepUser) {
+  deletingUser.value = user
+  showDeleteConfirm.value = true
+}
+
+function changePage(page: number) {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+    loadUsers()
+  }
+}
+
+function getVisiblePages() {
+  const pages = []
+  const total = totalPages.value
+  const current = currentPage.value
+  
+  if (total <= 7) {
+    for (let i = 1; i <= total; i++) {
+      pages.push(i)
+    }
+  } else {
+    pages.push(1)
+    
+    if (current <= 4) {
+      for (let i = 2; i <= 5; i++) {
+        pages.push(i)
+      }
+      pages.push('...')
+      pages.push(total)
+    } else if (current >= total - 3) {
+      pages.push('...')
+      for (let i = total - 4; i <= total; i++) {
+        pages.push(i)
+      }
+    } else {
+      pages.push('...')
+      for (let i = current - 1; i <= current + 1; i++) {
+        pages.push(i)
+      }
+      pages.push('...')
+      pages.push(total)
+    }
+  }
+  
+  return pages
 }
 </script>

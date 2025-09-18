@@ -210,10 +210,33 @@ export const useVepApi = () => {
 
   // 👥 VEP Users API Functions
   
-  // Obtener usuarios paginados
-  const getVepUsersPaginated = async (page: number = 1, limit: number = 10): Promise<PaginatedResponse<VepUser>> => {
+  // Obtener usuarios paginados con búsqueda y filtros integrados
+  const getVepUsersPaginated = async (
+    page: number = 1, 
+    limit: number = 10, 
+    search?: string, 
+    field?: string, 
+    type?: 'autónomo' | 'credencial'
+  ): Promise<PaginatedResponse<VepUser>> => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString()
+    })
+    
+    if (search && search.trim()) {
+      params.append('search', search.trim())
+    }
+    
+    if (field && field.trim()) {
+      params.append('field', field.trim())
+    }
+    
+    if (type) {
+      params.append('type', type)
+    }
+    
     return handleApiCall(() =>
-      fetch(`${baseURL}/vep-users/paginated?page=${page}&limit=${limit}`, { 
+      fetch(`${baseURL}/vep-users/paginated?${params.toString()}`, { 
         headers: getAuthHeaders() 
       })
     )

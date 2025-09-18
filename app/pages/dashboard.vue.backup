@@ -187,93 +187,753 @@
       <!-- Tab Content -->
       <div class="space-y-6">
         <!-- Create Folder Tab -->
-        <CreateFolderTab
-          v-if="activeTab === 'create'"
-          :create-form="createForm"
-          :create-loading="createLoading"
-          :preview-folder-name="previewFolderName"
-          :month-options="monthOptions"
-          :year-options="yearOptions"
-          @create-folder="handleCreateFolder"
-          @update:create-form="createForm = $event"
-        />
+        <div v-if="activeTab === 'create'" class="space-y-4">
+          <UCard>
+            <template #header>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                Crear Nueva Carpeta VEP
+              </h3>
+            </template>
+
+            <form @submit.prevent="handleCreateFolder" class="space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Mes
+                  </label>
+                  <USelect
+                    v-model="createForm.month"
+                    :items="monthOptions"
+                    placeholder="Seleccionar mes"
+                    class="w-full"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Año
+                  </label>
+                  <USelect
+                    v-model="createForm.year"
+                    :items="yearOptions"
+                    placeholder="Seleccionar año"
+                    class="w-full"
+                  />
+                </div>
+              </div>
+
+              <!-- Preview -->
+              <div v-if="previewFolderName" class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+                <p class="text-sm font-medium text-blue-800 dark:text-blue-200">
+                  Nombre de carpeta: <code class="text-blue-600 dark:text-blue-400">{{ previewFolderName }}</code>
+                </p>
+              </div>
+
+              <UButton
+                type="submit"
+                :loading="createLoading"
+                :disabled="!createForm.month || !createForm.year"
+                class="w-full sm:w-auto"
+                size="lg"
+              >
+                <UIcon name="i-heroicons-plus-circle" class="w-4 h-4 mr-2" />
+                Crear Carpeta
+              </UButton>
+            </form>
+          </UCard>
+        </div>
 
         <!-- Search Tab -->
-        <SearchTab
-          v-if="activeTab === 'search'"
-          :folders="folders"
-          :displayed-folders="displayedFolders"
-          :selected-folder-name="selectedFolderName"
-          :displayed-selected-folder-contents="displayedSelectedFolderContents"
-          :filtered-folder-items="filteredFolderItems"
-          :folder-search-term="folderSearchTerm"
-          :search-results="searchResults"
-          :displayed-search-results="displayedSearchResults"
-          :visible-folders="visibleFolders"
-          :visible-search-results="visibleSearchResults"
-          :visible-show-empty="visibleShowEmpty"
-          @load-folders="loadFolders"
-          @load-folder-contents="loadFolderContents"
-          @close-folder="selectedFolderContents = null"
-          @update:folder-search-term="folderSearchTerm = $event"
-          @open-viewer="openViewer"
-          @download-file="downloadFile"
-          @prepare-rename="prepareRename"
-        />
+        <div v-if="activeTab === 'search'" class="space-y-4">
+          <div v-if="activeTab === 'search'" class="space-y-6">
+            <div v-if="visibleFolders">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                  Carpetas ({{ folders.length }})
+                </h3>
+                <UButton @click="loadFolders" variant="outline" size="sm">
+                  <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 mr-2" />
+                  Actualizar
+                </UButton>
+              </div>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div
+                  v-for="folder in displayedFolders"
+                  :key="folder"
+                  class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md transition-all duration-200 cursor-pointer"
+                  @click="loadFolderContents(folder)"
+                >
+                  <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                      <UIcon name="i-heroicons-folder" class="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="font-medium text-gray-900 dark:text-white truncate">
+                        {{ folder }}
+                      </p>
+                      <p class="text-sm text-gray-500 dark:text-gray-400">
+                        Carpeta VEP
+                      </p>
+                    </div>
+                    <UIcon name="i-heroicons-chevron-right" class="w-4 h-4 text-gray-400" />
+                  </div>
+                </div>
+              </div>
+            </div>
 
-        <!-- Upload Tab -->
-        <UploadTab
-          v-if="activeTab === 'upload'"
-          :upload-form="uploadForm"
-          :folder-options="folderOptions"
-          :folders-loading="foldersLoading"
-          :selected-files="selectedFiles"
-          :is-uploading="isUploading"
-          :allowed-types="allowedTypes"
-          @update:upload-form="uploadForm = $event"
-          @file-select="(files) => handleFileSelect({ target: { files } })"
-          @clear-files="clearFiles"
-          @remove-file="removeFile"
-          @upload-files="uploadFiles"
-        />
+            <div v-if="activeTab === 'search' && displayedSelectedFolderContents">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                  {{ selectedFolderName }} ({{ displayedSelectedFolderContents?.totalCount || 0 }} elementos)
+                </h3>
+                <UButton @click="selectedFolderContents = null" variant="outline" size="sm">
+                  <UIcon name="i-heroicons-x-mark" class="w-4 h-4 mr-2" />
+                  Cerrar
+                </UButton>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="p-4 border-b border-gray-100 dark:border-gray-700">
+                  <UInput v-model="folderSearchTerm" placeholder="Buscar dentro de la carpeta..." icon="i-heroicons-magnifying-glass" />
+                </div>
+                <div class="max-h-96 overflow-y-auto">
+                  <div
+                    v-for="item in filteredFolderItems"
+                    :key="item.key"
+                    class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                  >
+                    <div class="flex items-center space-x-3 flex-1 min-w-0">
+                      <UIcon
+                        :name="item.type === 'file' ? 'i-heroicons-document-text' : 'i-heroicons-folder'"
+                        :class="item.type === 'file' ? 'text-gray-500' : 'text-blue-500'"
+                        class="w-5 h-5 flex-shrink-0"
+                      />
+                      <div class="flex-1 min-w-0">
+                          <p class="font-medium text-gray-900 dark:text-white truncate">
+                            {{ item.name }}
+                          </p>
+                        <div class="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                          <span v-if="item.size">
+                            {{ formatFileSize(item.size) }}
+                          </span>
+                          <span v-if="item.lastModified">
+                            {{ formatDate(item.lastModified) }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                      <UButton
+                        v-if="item.type === 'file'"
+                        variant="ghost"
+                        size="sm"
+                        @click="openViewer(item)"
+                        title="Previsualizar"
+                      >
+                        <UIcon name="i-heroicons-eye" class="w-4 h-4" />
+                      </UButton>
+
+                      <UButton
+                        v-if="item.type === 'file'"
+                        variant="ghost"
+                        size="sm"
+                        @click="downloadFile(item)"
+                        title="Descargar"
+                      >
+                        <UIcon name="i-heroicons-arrow-down" class="w-4 h-4" />
+                      </UButton>
+
+                      <UButton
+                        v-if="item.type === 'file'"
+                        variant="ghost"
+                        size="sm"
+                        @click="prepareRename(item)"
+                        title="Renombrar"
+                      >
+                        <UIcon name="i-heroicons-pencil" class="w-4 h-4" />
+                      </UButton>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="visibleSearchResults">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                Resultados de búsqueda ({{ searchResults.length }})
+              </h3>
+              
+              <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="max-h-96 overflow-y-auto">
+                  <div
+                    v-for="result in displayedSearchResults"
+                    :key="result.key"
+                    class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                  >
+                    <div class="flex items-center space-x-3 flex-1 min-w-0">
+                      <UIcon
+                        :name="result.type === 'file' ? 'i-heroicons-document-text' : 'i-heroicons-folder'"
+                        :class="result.type === 'file' ? 'text-gray-500' : 'text-blue-500'"
+                        class="w-5 h-5 flex-shrink-0"
+                      />
+                      <div class="flex-1 min-w-0">
+                        <p class="font-medium text-gray-900 dark:text-white truncate">
+                          {{ result.name }}
+                        </p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 truncate">
+                          {{ result.key }}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                      <UButton
+                        v-if="result.type === 'file'"
+                        variant="ghost"
+                        size="sm"
+                        @click="openViewer(result)"
+                        title="Previsualizar"
+                      >
+                        <UIcon name="i-heroicons-eye" class="w-4 h-4" />
+                      </UButton>
+
+                      <UButton
+                        v-if="result.type === 'file'"
+                        variant="ghost"
+                        size="sm"
+                        @click="downloadFile(result)"
+                        title="Descargar"
+                      >
+                        <UIcon name="i-heroicons-arrow-down" class="w-4 h-4" />
+                      </UButton>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="visibleShowEmpty" class="text-center py-12">
+              <UIcon name="i-heroicons-folder-open" class="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                No hay resultados
+              </h3>
+              <p class="text-gray-500 dark:text-gray-400 mb-6">
+                No se encontraron carpetas o archivos.
+              </p>
+              <UButton @click="loadFolders" variant="outline">
+                <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 mr-2" />
+                Cargar carpetas
+              </UButton>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="activeTab === 'upload'" class="space-y-4">
+          <UCard>
+            <template #header>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                Subir Archivos VEP
+              </h3>
+            </template>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Carpeta destino
+                </label>
+                <USelect
+                  v-model="uploadForm.targetFolder"
+                  :items="folderOptions"
+                  placeholder="Seleccionar carpeta"
+                  :loading="foldersLoading"
+                  class="w-full"
+                />
+              </div>
+
+              <div
+                @drop="handleDrop"
+                @dragover="handleDragOver"
+                @dragenter="handleDragEnter"
+                @dragleave="handleDragLeave"
+                :class="[
+                  'border-2 border-dashed rounded-xl p-6 sm:p-8 text-center transition-all duration-200',
+                  isDragging
+                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                    : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500'
+                ]"
+              >
+                <div class="space-y-4">
+                  <div class="mx-auto w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                    <UIcon 
+                      :name="isDragging ? 'i-heroicons-document-plus' : 'i-heroicons-cloud-arrow-up'"
+                      class="w-8 h-8 text-blue-600 dark:text-blue-400"
+                    />
+                  </div>
+                  
+                  <div>
+                    <p class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                      {{ isDragging ? 'Suelta los archivos aquí' : 'Arrastra archivos aquí' }}
+                    </p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                      o 
+                      <button 
+                        type="button"
+                        @click="($refs.fileInput as HTMLInputElement)?.click()" 
+                        class="text-blue-600 hover:text-blue-700 font-medium"
+                      >
+                        selecciona desde tu dispositivo
+                      </button>
+                    </p>
+                    
+                    <div class="flex flex-wrap justify-center gap-2 text-xs">
+                      <span v-for="type in allowedTypes" :key="type" 
+                            class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-gray-600 dark:text-gray-300">
+                        {{ type }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <input 
+                  ref="fileInput"
+                  type="file" 
+                  multiple
+                  class="hidden"
+                  @change="handleFileSelect"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif"
+                />
+              </div>
+
+              <div v-if="selectedFiles.length > 0" class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <h4 class="font-medium text-gray-900 dark:text-white">
+                    Archivos seleccionados ({{ selectedFiles.length }})
+                  </h4>
+                  <UButton 
+                    @click="clearFiles" 
+                    variant="ghost" 
+                    size="sm"
+                    color="error"
+                  >
+                    <UIcon name="i-heroicons-trash" class="w-4 h-4 mr-1" />
+                    Limpiar
+                  </UButton>
+                </div>
+
+                <div class="max-h-60 overflow-y-auto space-y-2">
+                  <div 
+                    v-for="(file, index) in selectedFiles" 
+                    :key="index"
+                    class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                  >
+                    <div class="flex items-center space-x-3 flex-1 min-w-0">
+                      <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <UIcon name="i-heroicons-document-text" class="w-4 h-4 text-blue-600" />
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                          {{ file.name }}
+                        </p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                          {{ formatFileSize(file.size) }}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <UButton 
+                      @click="removeFile(index)"
+                      variant="ghost" 
+                      size="sm"
+                      color="error"
+                    >
+                      <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
+                    </UButton>
+                  </div>
+                </div>
+
+                <UButton
+                  @click="uploadFiles"
+                  :disabled="!uploadForm.targetFolder || selectedFiles.length === 0 || isUploading"
+                  :loading="isUploading"
+                  class="w-full"
+                  size="lg"
+                >
+                  <UIcon name="i-heroicons-cloud-arrow-up" class="w-4 h-4 mr-2" />
+                  Subir {{ selectedFiles.length }} archivo{{ selectedFiles.length !== 1 ? 's' : '' }}
+                </UButton>
+              </div>
+            </div>
+          </UCard>
+        </div>
 
         <!-- Users Tab -->
-        <UsersTab
-          v-if="activeTab === 'users'"
-          :users="users"
-          :users-loading="usersLoading"
-          :current-page="currentPage"
-          :page-size="pageSize"
-          :total-users="totalUsers"
-          :total-pages="totalPages"
-          :search-term="searchTerm"
-          :search-field="searchField"
-          :type-filter="typeFilter"
-          :is-searching="isSearching"
-          :search-field-options="searchFieldOptions"
-          :type-filter-options="typeFilterOptions"
-          :visible-pages="getVisiblePages()"
-          @open-user-modal="openUserModal"
-          @update:search-term="searchTerm = $event"
-          @update:search-field="searchField = $event"
-          @update:type-filter="typeFilter = $event"
-          @handle-user-search="handleUserSearch"
-          @clear-user-search="clearUserSearch"
-          @confirm-delete="confirmDelete"
-          @change-page="changePage"
-        />
+        <div v-if="activeTab === 'users'" class="space-y-6">
+          <UCard>
+            <template #header>
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    Gestión de Usuarios VEP
+              </h3>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    Administra los usuarios del sistema VEP
+                  </p>
+                </div>
+                <UButton
+                  @click="openUserModal()"
+                  size="lg"
+                  class="w-full sm:w-auto"
+                >
+                  <UIcon name="i-heroicons-plus" class="w-4 h-4 mr-2" />
+                  Nuevo Usuario
+                </UButton>
+              </div>
+            </template>
+
+            <!-- Loading State -->
+            <div v-if="usersLoading" class="flex items-center justify-center py-12">
+              <div class="text-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Cargando usuarios...</p>
+              </div>
+            </div>
+
+            <!-- Search and Filters -->
+            <div v-if="!usersLoading" class="space-y-4 mb-6">
+              <div class="flex flex-col sm:flex-row gap-4">
+                <div class="flex-1">
+                <UInput
+                    v-model="searchTerm"
+                    placeholder="Buscar usuarios... (ej: Juan, 12345678, +54911)"
+                    icon="i-heroicons-magnifying-glass"
+                    @input="handleUserSearch"
+                    class="w-full"
+                />
+              </div>
+              <div>
+                  <USelect
+                    v-model="searchField"
+                    :items="searchFieldOptions"
+                    placeholder="Campo"
+                    class="w-40"
+                    @update:model-value="handleUserSearch"
+                  />
+                </div>
+                <div>
+                  <USelect
+                    v-model="typeFilter"
+                    :items="typeFilterOptions"
+                    placeholder="Tipo"
+                    class="w-40"
+                    @update:model-value="handleUserSearch"
+                  />
+                </div>
+              </div>
+
+              <div v-if="searchTerm" class="flex items-center justify-between">
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  <template v-if="isSearching">
+                    Buscando "{{ searchTerm }}"...
+                  </template>
+                  <template v-else>
+                    Resultados para "{{ searchTerm }}" {{ searchField !== 'Todos los campos' ? `en ${searchField.toLowerCase()}` : 'en todos los campos' }}
+                  </template>
+                </p>
+                <UButton variant="ghost" size="sm" @click="clearUserSearch">
+                  <UIcon name="i-heroicons-x-mark" class="w-4 h-4 mr-1" />
+                  Limpiar
+                </UButton>
+              </div>
+            </div>
+
+            <!-- Users List -->
+            <div v-if="users.length > 0" class="space-y-4">
+              <!-- Desktop Table -->
+              <div class="hidden md:block overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead class="bg-gray-50 dark:bg-gray-800">
+                    <tr>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Usuario
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Contacto
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        CUIT
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Tipo
+                      </th>
+                      <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Acciones
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                    <tr v-for="user in users" :key="user.id" class="hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <td class="px-6 py-4">
+                        <div>
+                          <div class="text-sm font-medium text-gray-900 dark:text-white">
+                            Apodo: {{ user.alter_name }}
+                          </div>
+                          <div class="text-sm text-gray-500 dark:text-gray-400">
+                            {{ user.real_name }}
+                          </div>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <div class="text-sm text-gray-900 dark:text-white">
+                          {{ user.mobile_number }}
+                        </div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <div class="text-sm text-gray-900 dark:text-white">
+                          {{ user.cuit || '-' }}
+                        </div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <span :class="[
+                          'inline-flex px-2 py-1 text-xs font-semibold rounded-full',
+                          user.type === 'autónomo'
+                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                            : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                        ]">
+                          {{ user.type === 'autónomo' ? 'Autónomo' : 'Credencial' }}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4 text-right">
+                        <div class="flex items-center justify-end space-x-2">
+              <UButton
+                            variant="ghost"
+                            size="sm"
+                            @click="openUserModal(user)"
+                            title="Editar"
+                          >
+                            <UIcon name="i-heroicons-pencil" class="w-4 h-4" />
+                          </UButton>
+                          <UButton
+                            variant="ghost"
+                            size="sm"
+                            color="red"
+                            @click="confirmDelete(user)"
+                            title="Eliminar"
+                          >
+                            <UIcon name="i-heroicons-trash" class="w-4 h-4" />
+                          </UButton>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Mobile Cards -->
+              <div class="md:hidden space-y-4">
+                <div v-for="user in users" :key="user.id" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                  <div class="flex items-start justify-between mb-3">
+                    <div class="flex-1">
+                      <h4 class="text-sm font-medium text-gray-900 dark:text-white">
+                        {{ user.alter_name }}
+                      </h4>
+                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {{ user.real_name }}
+                      </p>
+                    </div>
+                    <span :class="[
+                      'inline-flex px-2 py-1 text-xs font-semibold rounded-full ml-2',
+                      user.type === 'autónomo'
+                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                        : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                    ]">
+                      {{ user.type === 'autónomo' ? 'Autónomo' : 'Credencial' }}
+                    </span>
+                  </div>
+                  
+                  <div class="space-y-2 mb-4">
+                    <div class="flex items-center text-sm">
+                      <UIcon name="i-heroicons-phone" class="w-4 h-4 text-gray-400 mr-2" />
+                      <span class="text-gray-900 dark:text-white">{{ user.mobile_number }}</span>
+                    </div>
+                    <div class="flex items-center text-sm">
+                      <UIcon name="i-heroicons-identification" class="w-4 h-4 text-gray-400 mr-2" />
+                      <span class="text-gray-900 dark:text-white">{{ user.cuit || 'Sin CUIT' }}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="flex items-center justify-end space-x-2">
+                    <UButton
+                      variant="outline"
+                      size="sm"
+                      @click="openUserModal(user)"
+                    >
+                      <UIcon name="i-heroicons-pencil" class="w-4 h-4 mr-1" />
+                      Editar
+                    </UButton>
+                    <UButton
+                      variant="outline"
+                      size="sm"
+                      color="red"
+                      @click="confirmDelete(user)"
+                    >
+                      <UIcon name="i-heroicons-trash" class="w-4 h-4 mr-1" />
+                      Eliminar
+                    </UButton>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Search Results Info -->
+              <div v-if="searchTerm.trim()" class="flex items-center justify-center pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div class="text-sm text-gray-700 dark:text-gray-300">
+                  {{ totalUsers }} resultado{{ totalUsers !== 1 ? 's' : '' }} encontrado{{ totalUsers !== 1 ? 's' : '' }}
+                </div>
+              </div>
+
+              <!-- Pagination -->
+              <div v-if="!searchTerm.trim()" class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex flex-col sm:flex-row items-center gap-4">
+                  <div class="text-sm text-gray-700 dark:text-gray-300">
+                    Mostrando {{ (currentPage - 1) * pageSize + 1 }} a {{ Math.min(currentPage * pageSize, totalUsers) }} de {{ totalUsers }} usuarios
+                  </div>
+                  <!-- <USelect
+                    v-model="pageSize"
+                    :items="pageSizeOptions"
+                    class="w-36"
+                    value-attribute="value"
+                    option-attribute="label"
+                    @update:model-value="handlePageSizeChange"
+                  /> -->
+                </div>
+                <div class="flex items-center space-x-2">
+                  <UButton
+                    variant="outline"
+                    size="sm"
+                    :disabled="currentPage <= 1"
+                    @click="changePage(currentPage - 1)"
+                  >
+                    <UIcon name="i-heroicons-chevron-left" class="w-4 h-4" />
+                    Anterior
+                  </UButton>
+                  
+                  <div class="flex items-center space-x-1">
+                    <template v-for="page in getVisiblePages()" :key="page">
+                      <UButton
+                        v-if="page !== '...'"
+                        :variant="page === currentPage ? 'solid' : 'outline'"
+                        size="sm"
+                        @click="changePage(page)"
+                        class="min-w-[2rem]"
+                      >
+                        {{ page }}
+                      </UButton>
+                      <span v-else class="px-2 text-gray-500">...</span>
+                    </template>
+                  </div>
+                  
+                  <UButton
+                    variant="outline"
+                    size="sm"
+                    :disabled="currentPage >= totalPages"
+                    @click="changePage(currentPage + 1)"
+                  >
+                    Siguiente
+                    <UIcon name="i-heroicons-chevron-right" class="w-4 h-4" />
+                  </UButton>
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty State -->
+            <div v-else class="text-center py-12">
+              <UIcon name="i-heroicons-users" class="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                No hay usuarios
+              </h3>
+              <p class="text-gray-500 dark:text-gray-400 mb-6">
+                Comienza creando tu primer usuario VEP.
+              </p>
+              <UButton @click="openUserModal()">
+                <UIcon name="i-heroicons-plus" class="w-4 h-4 mr-2" />
+                Crear Usuario
+              </UButton>
+            </div>
+          </UCard>
+        </div>
 
         <!-- Enviar VEPs Tab -->
-        <EnviarTab
-          v-if="activeTab === 'enviar'"
-          @open-enviar-modal="openEnviarModal"
-        />
+        <div v-if="activeTab === 'enviar'" class="space-y-6">
+          <UCard>
+            <template #header>
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    Enviar VEPs
+                  </h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    Matchear archivos VEP con usuarios y enviar documentos
+                  </p>
+                </div>
+                <UButton
+                  @click="openEnviarModal"
+                  size="lg"
+                  class="w-full sm:w-auto"
+                >
+                  <UIcon name="i-heroicons-paper-airplane" class="w-4 h-4 mr-2" />
+                  Iniciar Proceso
+                </UButton>
+              </div>
+            </template>
+
+            <div class="text-center py-12">
+              <UIcon name="i-heroicons-paper-airplane" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                Envío de VEPs
+              </h3>
+              <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                Selecciona una carpeta de archivos VEP y los usuarios correspondientes para realizar el matcheo y envío automático de documentos.
+              </p>
+              <UButton
+                @click="openEnviarModal"
+                size="lg"
+                variant="outline"
+              >
+                <UIcon name="i-heroicons-paper-airplane" class="w-4 h-4 mr-2" />
+                Comenzar Proceso
+              </UButton>
+            </div>
+          </UCard>
+        </div>
 
         <!-- QR Tab -->
-        <QrTab
-          v-if="activeTab === 'qr'"
-          @show-qr-confirmation="showQrConfirmation = true"
-        />
+        <div v-if="activeTab === 'qr'" class="space-y-4">
+          <UCard>
+            <template #header>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                Código QR para WhatsApp
+              </h3>
+            </template>
+
+            <div class="space-y-4">
+              <div class="text-center">
+                <p class="text-gray-600 dark:text-gray-400 mb-6">
+                  Escanea el código QR para abrir una conexión vía WhatsApp
+                </p>
+                
+                <UButton
+                  @click="showQrConfirmation = true"
+                size="lg"
+                  class="w-full sm:w-auto"
+              >
+                  <UIcon name="i-heroicons-qr-code" class="w-5 h-5 mr-2" />
+                  Mostrar Código QR
+              </UButton>
+              </div>
+            </div>
+          </UCard>
+        </div>
       </div>
 
 
@@ -725,8 +1385,8 @@
     </div>
 
     <!-- Enviar VEPs Modal -->
-    <div v-if="showEnviarModal" class="fixed inset-0 z-70 flex items-center justify-center bg-black/60 p-2 sm:p-4">
-      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xl w-full max-w-[95vw] h-[95vh] overflow-hidden">
+    <div v-if="showEnviarModal" class="fixed inset-0 z-70 flex items-center justify-center bg-black/60 p-4">
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
         
         <!-- Modal Header -->
         <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
@@ -746,17 +1406,17 @@
         <!-- Modal Content -->
         <div class="flex-1 overflow-y-auto">
           <!-- Step 1: Selection -->
-          <div v-if="enviarStep === 1" class="p-4 sm:p-6">
-            <div class="space-y-6">
+          <div v-if="enviarStep === 1" class="p-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
               
-              <!-- Top: Folder Selection (Compact) -->
-              <div class="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg">
-                <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                  Seleccionar Carpeta
-                </h4>
-                
-                <div class="flex flex-col sm:flex-row gap-4 items-start">
-                  <div class="flex-1">
+              <!-- Left Panel: Folder Selection -->
+              <div class="space-y-6">
+                <div>
+                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    Seleccionar Carpeta
+                  </h4>
+                  
+                  <div class="space-y-4">
                     <USelect
                       v-model="selectedFolder"
                       :items="availableFolders"
@@ -764,19 +1424,21 @@
                       :loading="foldersLoading"
                       class="w-full"
                     />
-                  </div>
-                  
-                  <div v-if="selectedFolder" class="flex items-center px-3 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <UIcon name="i-heroicons-folder-open" class="w-4 h-4 text-blue-600 dark:text-blue-400 mr-2" />
-                    <span class="text-sm font-medium text-blue-800 dark:text-blue-200">
-                      {{ selectedFolder }}
-                    </span>
+                    
+                    <div v-if="selectedFolder" class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <div class="flex items-center">
+                        <UIcon name="i-heroicons-folder-open" class="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
+                        <span class="text-sm font-medium text-blue-800 dark:text-blue-200">
+                          Carpeta seleccionada: {{ selectedFolder }}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <!-- Bottom: User Selection (Expanded) -->
-              <div class="space-y-6 flex-1">
+              <!-- Right Panel: User Selection -->
+              <div class="space-y-6">
                 <div class="flex items-center justify-between">
                   <h4 class="text-lg font-semibold text-gray-900 dark:text-white">
                     Seleccionar Usuarios
@@ -846,7 +1508,7 @@
                 </div>
 
                 <!-- Users List -->
-                <div class="border border-gray-200 dark:border-gray-700 rounded-lg max-h-[60vh] overflow-y-auto">
+                <div class="border border-gray-200 dark:border-gray-700 rounded-lg max-h-96 overflow-y-auto">
                   <div v-if="enviarUsersLoading" class="p-8 text-center">
                     <UIcon name="i-heroicons-arrow-path" class="w-6 h-6 text-gray-400 animate-spin mx-auto mb-2" />
                     <p class="text-sm text-gray-600 dark:text-gray-400">Cargando usuarios...</p>
@@ -895,19 +1557,9 @@
                 </div>
 
                 <!-- Pagination -->
-                <div v-if="enviarTotalPages > 1" class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <div class="flex flex-col sm:flex-row items-center gap-4">
-                    <div class="text-sm text-gray-700 dark:text-gray-300">
-                      Mostrando {{ (enviarCurrentPage - 1) * enviarPageSize + 1 }} a {{ Math.min(enviarCurrentPage * enviarPageSize, enviarTotalUsers) }} de {{ enviarTotalUsers }} usuarios
-                    </div>
-                    <USelect
-                      v-model="enviarPageSize"
-                      :items="pageSizeOptions"
-                      class="w-36"
-                      value-attribute="value"
-                      option-attribute="label"
-                      @update:model-value="handleEnviarPageSizeChange"
-                    />
+                <div v-if="enviarTotalPages > 1" class="flex items-center justify-between">
+                  <div class="text-sm text-gray-700 dark:text-gray-300">
+                    Página {{ enviarCurrentPage }} de {{ enviarTotalPages }}
                   </div>
                   <div class="flex items-center space-x-2">
                     <UButton
@@ -917,31 +1569,13 @@
                       @click="changeEnviarPage(enviarCurrentPage - 1)"
                     >
                       <UIcon name="i-heroicons-chevron-left" class="w-4 h-4" />
-                      Anterior
                     </UButton>
-                    
-                    <div class="flex items-center space-x-1">
-                      <template v-for="page in getEnviarVisiblePages()" :key="page">
-                        <UButton
-                          v-if="page !== '...'"
-                          :variant="page === enviarCurrentPage ? 'solid' : 'outline'"
-                          size="sm"
-                          @click="changeEnviarPage(page)"
-                          class="min-w-[2rem]"
-                        >
-                          {{ page }}
-                        </UButton>
-                        <span v-else class="px-2 text-gray-500">...</span>
-                      </template>
-                    </div>
-                    
                     <UButton
                       variant="outline"
                       size="sm"
                       :disabled="enviarCurrentPage >= enviarTotalPages"
                       @click="changeEnviarPage(enviarCurrentPage + 1)"
                     >
-                      Siguiente
                       <UIcon name="i-heroicons-chevron-right" class="w-4 h-4" />
                     </UButton>
                   </div>
@@ -958,15 +1592,12 @@
                   Resultados del Matcheo
                 </h4>
                 <div class="text-sm text-gray-600 dark:text-gray-400">
-                  {{ matchResults.filter(r => r.matched && r.matchType === 'exact').length }} exactos, 
-                  {{ matchResults.filter(r => r.matched && r.matchType === 'partial').length }} parciales, 
-                  {{ matchResults.filter(r => !r.matched).length }} no encontrados 
-                  ({{ matchResults.length }} total)
+                  {{ matchResults.filter(r => r.matched).length }} de {{ matchResults.length }} archivos encontrados
                 </div>
               </div>
 
               <!-- Results List -->
-              <div class="border border-gray-200 dark:border-gray-700 rounded-lg max-h-[70vh] overflow-y-auto">
+              <div class="border border-gray-200 dark:border-gray-700 rounded-lg max-h-96 overflow-y-auto">
                 <div class="divide-y divide-gray-200 dark:divide-gray-700">
                   <div 
                     v-for="result in matchResults" 
@@ -975,15 +1606,9 @@
                   >
                     <div class="flex items-center space-x-4">
                       <div class="flex-shrink-0">
-                        <!-- Coincidencia exacta (verde) -->
-                        <div v-if="result.matched && result.matchType === 'exact'" class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                        <div v-if="result.matched" class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
                           <UIcon name="i-heroicons-check" class="w-5 h-5 text-green-600 dark:text-green-400" />
                         </div>
-                        <!-- Coincidencia parcial (amarillo) -->
-                        <div v-else-if="result.matched && result.matchType === 'partial'" class="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center">
-                          <UIcon name="i-heroicons-exclamation-triangle" class="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-                        </div>
-                        <!-- Sin coincidencia (rojo) -->
                         <div v-else class="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
                           <UIcon name="i-heroicons-x-mark" class="w-5 h-5 text-red-600 dark:text-red-400" />
                         </div>
@@ -998,15 +1623,9 @@
                             <p class="text-xs text-gray-500 dark:text-gray-400">
                               {{ result.user.real_name }} • {{ result.user.cuit }}
                             </p>
-                            <!-- Coincidencia exacta -->
-                            <p v-if="result.matched && result.matchType === 'exact'" class="text-xs text-green-600 dark:text-green-400 mt-1">
-                              ✓ Archivo encontrado: {{ result.fileName }}
+                            <p v-if="result.matched && result.fileName" class="text-xs text-green-600 dark:text-green-400 mt-1">
+                              ✓ Archivo: {{ result.fileName }}
                             </p>
-                            <!-- Coincidencia parcial -->
-                            <p v-else-if="result.matched && result.matchType === 'partial'" class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
-                              ⚠ Archivo encontrado (formato sin espacio): {{ result.fileName }}
-                            </p>
-                            <!-- Sin coincidencia -->
                             <p v-else class="text-xs text-red-600 dark:text-red-400 mt-1">
                               ✗ No se encontró archivo PDF para este usuario
                             </p>
@@ -1014,17 +1633,11 @@
                           
                           <div :class="[
                             'px-3 py-1 rounded-full text-xs font-medium',
-                            result.matched && result.matchType === 'exact'
+                            result.matched 
                               ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                              : result.matched && result.matchType === 'partial'
-                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
                               : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                           ]">
-                            {{ 
-                              result.matched && result.matchType === 'exact' ? 'Encontrado' :
-                              result.matched && result.matchType === 'partial' ? 'Parcial' :
-                              'No encontrado' 
-                            }}
+                            {{ result.matched ? 'Encontrado' : 'No encontrado' }}
                           </div>
                         </div>
                       </div>
@@ -1081,12 +1694,6 @@
 import { useVepApi } from '~/composables/useVepApi'
 import { useAuth } from '../composables/useAuth'
 import type { FolderContents, FolderItem, VepUser, CreateVepUserDto, UpdateVepUserDto, PaginatedResponse } from '~/types/api'
-import CreateFolderTab from '~/components/tabs/CreateFolderTab.vue'
-import SearchTab from '~/components/tabs/SearchTab.vue'
-import UploadTab from '~/components/tabs/UploadTab.vue'
-import UsersTab from '~/components/tabs/UsersTab.vue'
-import EnviarTab from '~/components/tabs/EnviarTab.vue'
-import QrTab from '~/components/tabs/QrTab.vue'
 
 // Page meta
 definePageMeta({
@@ -1129,7 +1736,8 @@ const deleteLoading = ref(false)
 const showEnviarModal = ref(false)
 const enviarStep = ref(1) // 1: Selección, 2: Resultados
 const selectedFolder = ref('')
-const availableFolders = ref<Array<{label: string, value: string}>>([])
+const availableFolders = ref<string[]>([])
+const foldersLoading = ref(false)
 const selectedUsers = ref<Set<number>>(new Set())
 const enviarUsers = ref<VepUser[]>([])
 const enviarUsersLoading = ref(false)
@@ -1402,15 +2010,6 @@ watch(pageSize, async (newSize, oldSize) => {
   if (oldSize !== newSize && activeTab.value === 'users') {
     currentPage.value = 1
     await loadUsers()
-  }
-}, { immediate: false })
-
-// Watch enviarPageSize changes
-watch(enviarPageSize, async (newSize, oldSize) => {
-  console.log('EnviarPageSize watcher triggered:', oldSize, '->', newSize)
-  if (oldSize !== newSize && showEnviarModal.value) {
-    enviarCurrentPage.value = 1
-    await loadEnviarUsers()
   }
 }, { immediate: false })
 
@@ -1944,10 +2543,9 @@ function closeQrCode() {
 
 // Enviar VEPs functions
 function openEnviarModal() {
-  console.log('Opening Enviar modal...')
   showEnviarModal.value = true
   enviarStep.value = 1
-  loadFoldersForEnviar()
+  loadFolders()
   loadEnviarUsers()
 }
 
@@ -1968,19 +2566,12 @@ function resetEnviarFilters() {
   enviarCurrentPage.value = 1
 }
 
-async function loadFoldersForEnviar() {
+async function loadFolders() {
   foldersLoading.value = true
   try {
-    const response = await vepApi.listAllFolders()
-    console.log('Folders API response:', response)
-    // Convertir las carpetas al formato requerido por USelect
-    availableFolders.value = response.folders.map(folder => ({
-      label: folder,
-      value: folder
-    }))
-    console.log('Available folders for selector:', availableFolders.value)
+    const folders = await vepApi.listAllFolders()
+    availableFolders.value = folders
   } catch (error: any) {
-    console.error('Error loading folders for enviar:', error)
     showErrorToast('Error', error.message || 'Error al cargar carpetas')
   } finally {
     foldersLoading.value = false
@@ -2074,48 +2665,6 @@ function changeEnviarPage(page: number) {
   loadEnviarUsers()
 }
 
-async function handleEnviarPageSizeChange() {
-  console.log('Enviar page size changed to:', enviarPageSize.value)
-  enviarCurrentPage.value = 1
-  await loadEnviarUsers()
-}
-
-function getEnviarVisiblePages() {
-  const pages = []
-  const total = enviarTotalPages.value
-  const current = enviarCurrentPage.value
-  
-  if (total <= 7) {
-    for (let i = 1; i <= total; i++) {
-      pages.push(i)
-    }
-  } else {
-    pages.push(1)
-    
-    if (current <= 4) {
-      for (let i = 2; i <= 5; i++) {
-        pages.push(i)
-      }
-      pages.push('...')
-      pages.push(total)
-    } else if (current >= total - 3) {
-      pages.push('...')
-      for (let i = total - 4; i <= total; i++) {
-        pages.push(i)
-      }
-    } else {
-      pages.push('...')
-      for (let i = current - 1; i <= current + 1; i++) {
-        pages.push(i)
-      }
-      pages.push('...')
-      pages.push(total)
-    }
-  }
-  
-  return pages
-}
-
 async function proceedToMatching() {
   if (!selectedFolder.value) {
     showErrorToast('Error', 'Debe seleccionar una carpeta')
@@ -2132,44 +2681,22 @@ async function proceedToMatching() {
   try {
     // Obtener contenido de la carpeta
     const folderContents = await vepApi.getFolderContents(selectedFolder.value)
-    console.log('Folder contents:', folderContents)
     
     // Obtener usuarios seleccionados
     const selectedUsersList = enviarUsers.value.filter(user => selectedUsers.value.has(user.id))
     
     // Realizar matcheo en memoria
     const results = selectedUsersList.map(user => {
-      // Formatos exactos (verde)
-      const exactFileName1 = `${user.real_name.toUpperCase()} [${user.cuit}].pdf`
-      const exactFileName2 = `${user.alter_name.toUpperCase()} [${user.cuit}].pdf`
+      const expectedFileName1 = `${user.real_name.toUpperCase()} [${user.cuit}].pdf`
+      const expectedFileName2 = `${user.alter_name.toUpperCase()} [${user.cuit}].pdf`
       
-      // Formatos sin espacio (amarillo)
-      const partialFileName1 = `${user.real_name.toUpperCase()}[${user.cuit}].pdf`
-      const partialFileName2 = `${user.alter_name.toUpperCase()}[${user.cuit}].pdf`
-      
-      // Buscar coincidencia exacta primero
-      let matchedFile = folderContents.items.find(file => 
-        file.name === exactFileName1 || file.name === exactFileName2
+      const matchedFile = folderContents.files.find(file => 
+        file.name === expectedFileName1 || file.name === expectedFileName2
       )
-      
-      let matchType = 'exact' // exact, partial, none
-      
-      // Si no hay coincidencia exacta, buscar coincidencia parcial
-      if (!matchedFile) {
-        matchedFile = folderContents.items.find(file => 
-          file.name === partialFileName1 || file.name === partialFileName2
-        )
-        if (matchedFile) {
-          matchType = 'partial'
-        } else {
-          matchType = 'none'
-        }
-      }
       
       return {
         user,
         matched: !!matchedFile,
-        matchType,
         fileName: matchedFile?.name
       }
     })

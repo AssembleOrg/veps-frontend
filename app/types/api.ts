@@ -106,6 +106,8 @@ export interface VepUser {
     name: string
     cuit: string
   }> | null
+  // NUEVO: Tipo de usuario
+  type: 'autónomo' | 'credencial'
 }
 
 export interface CreateVepUserDto {
@@ -125,6 +127,8 @@ export interface CreateVepUserDto {
     name: string
     cuit: string
   }>
+  // NUEVO: Tipo de usuario
+  type: 'autónomo' | 'credencial'
 }
 
 export interface UpdateVepUserDto {
@@ -144,6 +148,8 @@ export interface UpdateVepUserDto {
     name: string
     cuit: string
   }>
+  // NUEVO: Tipo de usuario
+  type?: 'autónomo' | 'credencial'
 }
 
 export interface PaginatedResponse<T> {

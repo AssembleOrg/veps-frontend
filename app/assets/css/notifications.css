@@ -1,0 +1,81 @@
+/* Configuración personalizada para notificaciones */
+
+/* Posicionar las notificaciones arriba a la derecha */
+.notifications-container {
+  position: fixed !important;
+  top: 1rem !important;
+  right: 1rem !important;
+  left: auto !important;
+  bottom: auto !important;
+  z-index: 9999 !important;
+}
+
+/* Colores personalizados para notificaciones de error (rojo del sistema) */
+.notification-error {
+  background-color: #dc2626 !important; /* red-600 */
+  border-color: #b91c1c !important; /* red-700 */
+  color: white !important;
+}
+
+.notification-error .notification-title {
+  color: white !important;
+}
+
+.notification-error .notification-description {
+  color: #fca5a5 !important; /* red-300 */
+}
+
+/* Colores personalizados para notificaciones de éxito (verde del sistema) */
+.notification-success {
+  background-color: #16a34a !important; /* green-600 */
+  border-color: #15803d !important; /* green-700 */
+  color: white !important;
+}
+
+.notification-success .notification-title {
+  color: white !important;
+}
+
+.notification-success .notification-description {
+  color: #86efac !important; /* green-300 */
+}
+
+/* Sobrescribir estilos de Nuxt UI */
+[data-sonner-toast] {
+  position: relative !important;
+}
+
+[data-sonner-toaster] {
+  position: fixed !important;
+  top: 1rem !important;
+  right: 1rem !important;
+  left: auto !important;
+  bottom: auto !important;
+  z-index: 9999 !important;
+}
+
+/* Estilos para notificaciones rojas */
+[data-sonner-toast][data-type="error"],
+[data-sonner-toast][data-styled="true"][data-type="error"] {
+  background-color: #dc2626 !important;
+  border-color: #b91c1c !important;
+  color: white !important;
+}
+
+/* Estilos para notificaciones verdes */
+[data-sonner-toast][data-type="success"],
+[data-sonner-toast][data-styled="true"][data-type="success"] {
+  background-color: #16a34a !important;
+  border-color: #15803d !important;
+  color: white !important;
+}
+
+/* Asegurar que los textos sean visibles */
+[data-sonner-toast] [data-title] {
+  color: white !important;
+  font-weight: 600 !important;
+}
+
+[data-sonner-toast] [data-description] {
+  color: rgba(255, 255, 255, 0.9) !important;
+}

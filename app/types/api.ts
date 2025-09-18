@@ -91,7 +91,7 @@ export interface RenameForm {
 export interface VepUser {
   id: number
   alter_name: string
-  cuit: string | null
+  cuit: string
   execution_date: string | null
   is_group: boolean
   last_execution: string | null
@@ -101,13 +101,16 @@ export interface VepUser {
   need_compra: boolean | null
   need_auditoria: boolean | null
   real_name: string
-  joined_with: string | null
-  joined_cuit: string | null
+  // NUEVO: Array de usuarios asociados
+  joined_users: Array<{
+    name: string
+    cuit: string
+  }> | null
 }
 
 export interface CreateVepUserDto {
   alter_name: string
-  cuit?: string | null
+  cuit: string
   execution_date?: string | null
   is_group?: boolean
   last_execution?: string | null
@@ -117,13 +120,16 @@ export interface CreateVepUserDto {
   need_compra?: boolean | null
   need_auditoria?: boolean | null
   real_name: string
-  joined_with?: string | null
-  joined_cuit?: string | null
+  // NUEVO: Array de usuarios asociados
+  joined_users?: Array<{
+    name: string
+    cuit: string
+  }>
 }
 
 export interface UpdateVepUserDto {
   alter_name?: string
-  cuit?: string | null
+  cuit?: string
   execution_date?: string | null
   is_group?: boolean
   last_execution?: string | null
@@ -133,8 +139,11 @@ export interface UpdateVepUserDto {
   need_compra?: boolean | null
   need_auditoria?: boolean | null
   real_name?: string
-  joined_with?: string | null
-  joined_cuit?: string | null
+  // NUEVO: Array de usuarios asociados
+  joined_users?: Array<{
+    name: string
+    cuit: string
+  }>
 }
 
 export interface PaginatedResponse<T> {
@@ -148,4 +157,10 @@ export interface PaginatedResponse<T> {
 export interface DeleteVepUserResponse {
   success: boolean
   message: string
+}
+
+// Tipo para usuarios asociados
+export interface JoinedUserDto {
+  name: string
+  cuit: string
 } 

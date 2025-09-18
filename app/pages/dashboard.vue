@@ -1056,7 +1056,7 @@
                 </label>
                 <UInput
                   v-model="userForm.alter_name"
-                  placeholder="Juan Pérez"
+                  placeholder="Juanito"
                   required
                 />
               </div>
@@ -1067,8 +1067,9 @@
                 </label>
                 <UInput
                   v-model="userForm.real_name"
-                  placeholder="Juan Carlos Pérez"
+                  placeholder="JUAN CARLOS PÉREZ"
                   required
+                  @input="handleRealNameInput"
                 />
               </div>
             </div>
@@ -1087,11 +1088,12 @@
               
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  CUIT
+                  CUIT <span class="text-red-500">*</span>
                 </label>
                 <UInput
                   v-model="userForm.cuit"
                   placeholder="20-12345678-9"
+                  required
                 />
               </div>
             </div>
@@ -1163,32 +1165,74 @@
             </div>
           </div>
 
-          <!-- Asociaciones -->
+          <!-- Veps Unidos -->
           <div class="space-y-4">
-            <h4 class="text-md font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
-              Asociaciones
-            </h4>
+            <div class="flex items-center justify-between">
+              <h4 class="text-md font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2 flex-1">
+                Veps Unidos
+              </h4>
+              <UButton
+                @click="addJoinedUser"
+                variant="outline"
+                size="sm"
+                class="ml-4 flex-shrink-0"
+              >
+                <UIcon name="i-heroicons-plus" class="w-4 h-4 mr-1" />
+                Agregar
+              </UButton>
+            </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Asociado con
-                </label>
-                <UInput
-                  v-model="userForm.joined_with"
-                  placeholder="Nombre del usuario asociado"
-                />
+            <div v-if="userForm.joined_users && userForm.joined_users.length > 0" class="space-y-3">
+              <div 
+                v-for="(joinedUser, index) in userForm.joined_users" 
+                :key="index"
+                class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50"
+              >
+                <div class="flex items-start gap-4">
+                  <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Nombre Real
+                      </label>
+                      <UInput
+                        v-model="joinedUser.name"
+                        placeholder="Nombre Real del usuario asociado"
+                        class="w-full"
+                        required
+                        @input="(event) => handleJoinedUserNameInput(index, event)"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        CUIT <span class="text-red-500">*</span>
+                      </label>
+                      <UInput
+                        v-model="joinedUser.cuit"
+                        placeholder="20-87654321-9"
+                        class="w-full"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div class="flex-shrink-0 pt-8">
+                    <UButton
+                      @click="removeJoinedUser(index)"
+                      variant="outline"
+                      color="red"
+                      size="sm"
+                      class="p-2"
+                    >
+                      <UIcon name="i-heroicons-trash" class="w-4 h-4" />
+                    </UButton>
+                  </div>
+                </div>
               </div>
-              
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  CUIT Asociado
-                </label>
-                <UInput
-                  v-model="userForm.joined_cuit"
-                  placeholder="20-87654321-9"
-                />
-              </div>
+            </div>
+            
+            <div v-else class="text-sm text-gray-500 dark:text-gray-400 text-center py-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+              No hay usuarios asociados. Haz clic en "Agregar" para añadir uno.
             </div>
           </div>
 
@@ -1346,7 +1390,7 @@ const userForm = reactive<CreateVepUserDto>({
   alter_name: '',
   real_name: '',
   mobile_number: '',
-  cuit: null,
+  cuit: '',
   execution_date: null,
   is_group: false,
   last_execution: null,
@@ -1354,8 +1398,8 @@ const userForm = reactive<CreateVepUserDto>({
   need_z: null,
   need_compra: null,
   need_auditoria: null,
-  joined_with: null,
-  joined_cuit: null
+  // NUEVO: Array de usuarios asociados
+  joined_users: []
 })
 
 // Tab system
@@ -2150,10 +2194,120 @@ async function handlePageSizeChange() {
   await loadUsers()
 }
 
+// Funciones para manejar usuarios asociados dinámicamente
+function addJoinedUser() {
+  if (!userForm.joined_users) {
+    userForm.joined_users = []
+  }
+  userForm.joined_users.push({
+    name: '',
+    cuit: ''
+  })
+}
+
+function removeJoinedUser(index: number) {
+  if (userForm.joined_users && userForm.joined_users.length > index) {
+    userForm.joined_users.splice(index, 1)
+  }
+}
+
+// Funciones helper para notificaciones personalizadas
+function showErrorToast(title: string, description: string) {
+  // Crear notificación personalizada
+  createCustomNotification(title, description, 'error')
+}
+
+function showSuccessToast(title: string, description: string) {
+  // Crear notificación personalizada
+  createCustomNotification(title, description, 'success')
+}
+
+function createCustomNotification(title: string, description: string, type: 'error' | 'success') {
+  if (process.client) {
+    // Crear el elemento de notificación
+    const notification = document.createElement('div')
+    notification.className = `
+      fixed top-4 right-4 z-50 max-w-sm w-full
+      ${type === 'error' ? 'bg-red-600 border-red-700' : 'bg-green-600 border-green-700'}
+      border rounded-lg shadow-lg p-4 mb-4
+      transform transition-all duration-300 ease-in-out
+      translate-x-full opacity-0
+    `
+    
+    notification.innerHTML = `
+      <div class="flex items-start">
+        <div class="flex-shrink-0">
+          <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+            ${type === 'error' 
+              ? '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>'
+              : '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>'
+            }
+          </svg>
+        </div>
+        <div class="ml-3 flex-1">
+          <h3 class="text-sm font-semibold text-white">${title}</h3>
+          <p class="text-sm text-white/90 mt-1">${description}</p>
+        </div>
+        <div class="ml-4 flex-shrink-0">
+          <button class="inline-flex text-white/80 hover:text-white focus:outline-none" onclick="this.parentElement.parentElement.parentElement.remove()">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    `
+    
+    // Agregar al DOM
+    document.body.appendChild(notification)
+    
+    // Animar entrada
+    setTimeout(() => {
+      notification.classList.remove('translate-x-full', 'opacity-0')
+      notification.classList.add('translate-x-0', 'opacity-100')
+    }, 10)
+    
+    // Auto-remover después de 5 segundos
+    setTimeout(() => {
+      notification.classList.add('translate-x-full', 'opacity-0')
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification)
+        }
+      }, 300)
+    }, type === 'error' ? 5000 : 3000)
+  }
+}
+
+// Funciones para transformar nombres reales a mayúsculas
+function handleRealNameInput(event: Event) {
+  const target = event.target as HTMLInputElement
+  const upperValue = target.value.toUpperCase()
+  userForm.real_name = upperValue
+  // Actualizar el valor del input para que se muestre en mayúsculas
+  target.value = upperValue
+  console.log('Transforming real name to uppercase:', target.value, 'to', upperValue)
+}
+
+function handleJoinedUserNameInput(index: number, event: Event) {
+  const target = event.target as HTMLInputElement
+  const upperValue = target.value.toUpperCase()
+  if (userForm.joined_users && userForm.joined_users[index]) {
+    userForm.joined_users[index].name = upperValue
+    // Actualizar el valor del input para que se muestre en mayúsculas
+    target.value = upperValue
+    console.log('Transforming joined user name to uppercase:', target.value, 'to', upperValue)
+  }
+}
+
 function openUserModal(user?: VepUser) {
   if (user) {
     editingUser.value = user
-    Object.assign(userForm, user)
+    Object.assign(userForm, {
+      ...user,
+      // Asegurar que joined_users sea un array válido
+      joined_users: user.joined_users ? [...user.joined_users] : []
+    })
   } else {
     editingUser.value = null
     resetUserForm()
@@ -2166,7 +2320,7 @@ function resetUserForm() {
     alter_name: '',
     real_name: '',
     mobile_number: '',
-    cuit: null,
+    cuit: '',
     execution_date: null,
     is_group: false,
     last_execution: null,
@@ -2174,8 +2328,8 @@ function resetUserForm() {
     need_z: null,
     need_compra: null,
     need_auditoria: null,
-    joined_with: null,
-    joined_cuit: null
+    // NUEVO: Array vacío para usuarios asociados
+    joined_users: []
   })
 }
 
@@ -2186,13 +2340,21 @@ function closeUserModal() {
 }
 
 async function handleSaveUser() {
-  if (!userForm.alter_name.trim() || !userForm.real_name.trim() || !userForm.mobile_number.trim()) {
-    toast.add({
-      title: 'Error',
-      description: 'Los campos obligatorios deben estar completos',
-      color: 'error'
-    })
+  // Validar campos obligatorios básicos
+  if (!userForm.alter_name.trim() || !userForm.real_name.trim() || !userForm.mobile_number.trim() || !userForm.cuit.trim()) {
+    showErrorToast('Error', 'Los campos obligatorios (nombre alternativo, nombre real, teléfono móvil y CUIT) deben estar completos')
     return
+  }
+
+  // Validar usuarios asociados si existen
+  if (userForm.joined_users && userForm.joined_users.length > 0) {
+    for (let i = 0; i < userForm.joined_users.length; i++) {
+      const joinedUser = userForm.joined_users[i]
+      if (!joinedUser.name.trim() || !joinedUser.cuit.trim()) {
+        showErrorToast('Error', `El usuario asociado #${i + 1} debe tener nombre y CUIT completos`)
+        return
+      }
+    }
   }
 
   userModalLoading.value = true
@@ -2208,11 +2370,7 @@ async function handleSaveUser() {
         users.value[index] = updatedUser
       }
       
-      toast.add({
-        title: 'Usuario actualizado',
-        description: `${updatedUser.alter_name} ha sido actualizado exitosamente`,
-        color: 'success'
-      })
+      showSuccessToast('Usuario actualizado', `${updatedUser.alter_name} ha sido actualizado exitosamente`)
     } else {
       // Crear nuevo usuario
       const newUser = await vepApi.createVepUser(userForm)
@@ -2230,20 +2388,12 @@ async function handleSaveUser() {
       totalUsers.value += 1
       totalPages.value = Math.ceil(totalUsers.value / pageSize.value)
       
-      toast.add({
-        title: 'Usuario creado',
-        description: `${newUser.alter_name} ha sido creado exitosamente`,
-        color: 'success'
-      })
+      showSuccessToast('Usuario creado', `${newUser.alter_name} ha sido creado exitosamente`)
     }
     
     closeUserModal()
   } catch (error: any) {
-    toast.add({
-      title: 'Error',
-      description: error.message || 'Error al guardar usuario',
-      color: 'error'
-    })
+    showErrorToast('Error', error.message || 'Error al guardar usuario')
   } finally {
     userModalLoading.value = false
   }
@@ -2275,19 +2425,11 @@ async function handleDeleteUser() {
       await loadUsers()
     }
     
-    toast.add({
-      title: 'Usuario eliminado',
-      description: `${deletingUser.value.alter_name} ha sido eliminado exitosamente`,
-      color: 'success'
-    })
+    showSuccessToast('Usuario eliminado', `${deletingUser.value.alter_name} ha sido eliminado exitosamente`)
     
     cancelDelete()
   } catch (error: any) {
-    toast.add({
-      title: 'Error',
-      description: error.message || 'Error al eliminar usuario',
-      color: 'error'
-    })
+    showErrorToast('Error', error.message || 'Error al eliminar usuario')
   } finally {
     deleteLoading.value = false
   }

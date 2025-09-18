@@ -8,7 +8,8 @@ export const useAuth = () => {
   const token = ref<string | null>(null)
 
   // Backend auth endpoints base
-  const authBase = 'http://localhost:3000/auth'
+  const baseURL = useRuntimeConfig().public.baseURL
+  const authBase = `${baseURL}/auth`
 
   // Load session from localStorage if present
   const getSession = async () => {

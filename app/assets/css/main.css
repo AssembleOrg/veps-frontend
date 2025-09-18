@@ -1,0 +1,267 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+/* VEP System Responsive Styles */
+
+/* Mobile-first responsive design */
+@media (max-width: 640px) {
+  /* Mobile header adjustments */
+  .mobile-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  /* Mobile cards */
+  .mobile-card {
+    margin-left: -1rem;
+    margin-right: -1rem;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+  }
+  
+  /* Mobile tabs */
+  .mobile-tabs {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .mobile-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Mobile forms */
+  .mobile-form input,
+  .mobile-form select,
+  .mobile-form textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  /* Mobile buttons */
+  .mobile-button {
+    min-height: 44px;
+    padding: 12px 16px;
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .tablet-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop enhancements */
+@media (min-width: 1025px) {
+  .desktop-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .desktop-sidebar {
+    position: sticky;
+    top: 4rem;
+    height: calc(100vh - 4rem);
+  }
+}
+
+/* Custom utilities for VEP system */
+.vep-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .vep-container {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .vep-container {
+    padding: 0 2rem;
+  }
+}
+
+/* Smooth transitions */
+.vep-transition {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Focus styles */
+.vep-focus:focus {
+  outline: 2px solid theme('colors.blue.500');
+  outline-offset: 2px;
+}
+
+/* Loading states */
+.vep-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Drag and drop styles */
+.vep-dropzone {
+  border: 2px dashed theme('colors.gray.300');
+  transition: all 0.2s ease;
+}
+
+.vep-dropzone.dragging {
+  border-color: theme('colors.blue.500');
+  background-color: theme('colors.blue.50');
+}
+
+@media (prefers-color-scheme: dark) {
+  .vep-dropzone {
+    border-color: theme('colors.gray.600');
+  }
+  
+  .vep-dropzone.dragging {
+    border-color: theme('colors.blue.400');
+    background-color: theme('colors.blue.900/20');
+  }
+}
+
+/* File preview styles */
+.vep-file-preview {
+  max-height: 300px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.vep-file-preview::-webkit-scrollbar {
+  width: 6px;
+}
+
+.vep-file-preview::-webkit-scrollbar-track {
+  background: theme('colors.gray.100');
+  border-radius: 3px;
+}
+
+.vep-file-preview::-webkit-scrollbar-thumb {
+  background: theme('colors.gray.400');
+  border-radius: 3px;
+}
+
+.vep-file-preview::-webkit-scrollbar-thumb:hover {
+  background: theme('colors.gray.500');
+}
+
+/* Animation utilities */
+.vep-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.vep-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Stats cards responsive */
+.vep-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .vep-stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Tab system responsive */
+.vep-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  border-bottom: 1px solid theme('colors.gray.200');
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .vep-tabs {
+    border-bottom-color: theme('colors.gray.700');
+  }
+}
+
+.vep-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.vep-tab {
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.5rem 0.5rem 0 0;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.vep-tab.active {
+  background-color: theme('colors.blue.50');
+  color: theme('colors.blue.600');
+  border-bottom: 2px solid theme('colors.blue.600');
+}
+
+@media (prefers-color-scheme: dark) {
+  .vep-tab.active {
+    background-color: theme('colors.blue.900/20');
+    color: theme('colors.blue.400');
+    border-bottom-color: theme('colors.blue.400');
+  }
+}
+
+/* Form responsive styles */
+.vep-form-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .vep-form-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Results grid responsive */
+.vep-results-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .vep-results-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .vep-results-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .vep-results-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

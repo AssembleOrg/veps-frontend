@@ -1,0 +1,170 @@
+/* Mobile-first responsive utilities */
+
+/* Touch-friendly interactive elements */
+@media (hover: none) and (pointer: coarse) {
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Larger touch targets on mobile */
+  button, .button, [role="button"] {
+    min-height: 44px;
+    padding: 12px 16px;
+  }
+  
+  /* Prevent zoom on input focus */
+  input, select, textarea {
+    font-size: 16px;
+  }
+}
+
+/* Improved scrolling on mobile */
+.mobile-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Better focus states for mobile */
+@media (hover: none) {
+  .focus-visible {
+    outline: 2px solid theme('colors.blue.500');
+    outline-offset: 2px;
+  }
+}
+
+/* Responsive text scaling */
+@media (max-width: 640px) {
+  .responsive-text-xl {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+  
+  .responsive-text-2xl {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+  
+  .responsive-text-3xl {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+}
+
+/* Mobile-optimized spacing */
+@media (max-width: 640px) {
+  .mobile-px {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .mobile-py {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+  
+  .mobile-gap {
+    gap: 0.75rem;
+  }
+}
+
+/* Better mobile cards */
+.mobile-card {
+  @apply rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm;
+}
+
+@media (max-width: 640px) {
+  .mobile-card {
+    @apply rounded-none border-l-0 border-r-0 shadow-none;
+    margin-left: -1rem;
+    margin-right: -1rem;
+  }
+}
+
+/* Responsive grid improvements */
+.responsive-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .responsive-grid {
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+}
+
+/* Mobile-friendly modals and overlays */
+@media (max-width: 640px) {
+  .mobile-modal {
+    @apply fixed inset-x-0 bottom-0 top-auto rounded-t-lg rounded-b-none;
+    max-height: 90vh;
+  }
+  
+  .mobile-dropdown {
+    @apply fixed inset-x-4 top-auto bottom-4 w-auto;
+  }
+}
+
+/* Improved mobile navigation */
+.mobile-nav {
+  @apply fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* Better mobile form elements */
+@media (max-width: 640px) {
+  .mobile-form-group {
+    @apply space-y-3;
+  }
+  
+  .mobile-form-input {
+    @apply text-base; /* Prevents zoom on iOS */
+  }
+  
+  .mobile-form-button {
+    @apply w-full py-3 text-base font-medium;
+  }
+}
+
+/* VEP System specific styles */
+.vep-card {
+  @apply bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-200;
+}
+
+.vep-gradient-blue {
+  background: linear-gradient(135deg, theme('colors.blue.50') 0%, theme('colors.indigo.50') 100%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .vep-gradient-blue {
+    background: linear-gradient(135deg, theme('colors.blue.900/20') 0%, theme('colors.indigo.900/20') 100%);
+  }
+}
+
+.vep-gradient-emerald {
+  background: linear-gradient(135deg, theme('colors.emerald.50') 0%, theme('colors.teal.50') 100%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .vep-gradient-emerald {
+    background: linear-gradient(135deg, theme('colors.emerald.900/20') 0%, theme('colors.teal.900/20') 100%);
+  }
+}
+
+.vep-gradient-purple {
+  background: linear-gradient(135deg, theme('colors.purple.50') 0%, theme('colors.pink.50') 100%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .vep-gradient-purple {
+    background: linear-gradient(135deg, theme('colors.purple.900/20') 0%, theme('colors.pink.900/20') 100%);
+  }
+} 

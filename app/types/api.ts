@@ -107,7 +107,7 @@ export interface VepUser {
     cuit: string
   }> | null
   // NUEVO: Tipo de usuario
-  type: 'autónomo' | 'credencial'
+  type: 'autónomo' | 'credencial' | 'monotributo'
 }
 
 export interface CreateVepUserDto {
@@ -128,7 +128,7 @@ export interface CreateVepUserDto {
     cuit: string
   }>
   // NUEVO: Tipo de usuario
-  type: 'autónomo' | 'credencial'
+  type: 'autónomo' | 'credencial' | 'monotributo'
 }
 
 export interface UpdateVepUserDto {
@@ -149,7 +149,7 @@ export interface UpdateVepUserDto {
     cuit: string
   }>
   // NUEVO: Tipo de usuario
-  type?: 'autónomo' | 'credencial'
+  type?: 'autónomo' | 'credencial' | 'monotributo'
 }
 
 export interface PaginatedResponse<T> {
@@ -163,6 +163,71 @@ export interface PaginatedResponse<T> {
 export interface DeleteVepUserResponse {
   success: boolean
   message: string
+}
+
+// Job Time interfaces
+export interface JobTime {
+  id: number
+  created_at: string
+  users: Array<{
+    id: number
+    real_name: string
+    alter_name: string
+    mobile_number: string
+    last_execution: string | null
+    execution_date: string | null
+    need_papers: boolean | null
+    is_group: boolean
+    joined_users: Array<{
+      cuit: string
+      name: string
+    }> | null
+    need_z: boolean | null
+    need_compra: boolean | null
+    need_auditoria: boolean | null
+    cuit: string | null
+    type: 'autónomo' | 'credencial' | 'monotributo'
+    sent: boolean
+  }> | null
+  execution_time: string | null
+  type: 'autónomo' | 'credencial' | 'monotributo' | null
+  folder_name: string | null
+  status: 'PENDING' | 'FINISHED' | 'RUNNING' | 'ERROR'
+  caducate: string
+  executed_at: string
+}
+
+export interface CreateJobTimeDto {
+  users?: Array<{
+    id: number
+    real_name: string
+    alter_name: string
+    mobile_number: string
+    last_execution: string | null
+    execution_date: string | null
+    need_papers: boolean | null
+    is_group: boolean
+    joined_users: Array<{
+      cuit: string
+      name: string
+    }> | null
+    need_z: boolean | null
+    need_compra: boolean | null
+    need_auditoria: boolean | null
+    cuit: string | null
+    type: 'autónomo' | 'credencial' | 'monotributo'
+    sent: boolean
+  }>
+  execution_time?: string
+  type?: 'autónomo' | 'credencial' | 'monotributo'
+  folder_name?: string
+  status?: 'PENDING' | 'FINISHED' | 'RUNNING' | 'ERROR'
+  caducate: string // DD/MM format - obligatorio
+  executed_at?: string | null // Solo lectura, manejado por el backend
+}
+
+export interface UpdateJobTimeDto extends Partial<CreateJobTimeDto> {
+  // Todos los campos son opcionales
 }
 
 // Tipo para usuarios asociados

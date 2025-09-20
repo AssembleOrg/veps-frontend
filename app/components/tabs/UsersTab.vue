@@ -37,7 +37,7 @@
             <UInput
               :model-value="searchTerm"
               @update:model-value="$emit('update:searchTerm', $event)"
-              placeholder="Buscar usuarios... (ej: Juan, 12345678, +54911)"
+              placeholder="Buscar usuarios... (ej: Juan, 12345678, 54911)"
               icon="i-heroicons-magnifying-glass"
               @input="$emit('handle-user-search')"
               class="w-full"
@@ -130,9 +130,11 @@
                     'inline-flex px-2 py-1 text-xs font-semibold rounded-full',
                     user.type === 'autónomo'
                       ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                      : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                      : user.type === 'credencial'
+                      ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                      : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                   ]">
-                    {{ user.type === 'autónomo' ? 'Autónomo' : 'Credencial' }}
+                    {{ user.type === 'autónomo' ? 'Autónomo' : user.type === 'credencial' ? 'Credencial' : 'Monotributo' }}
                   </span>
                 </td>
                 <td class="px-6 py-4 text-right">
@@ -177,9 +179,11 @@
                 'inline-flex px-2 py-1 text-xs font-semibold rounded-full ml-2',
                 user.type === 'autónomo'
                   ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                  : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                  : user.type === 'credencial'
+                  ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                  : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
               ]">
-                {{ user.type === 'autónomo' ? 'Autónomo' : 'Credencial' }}
+                {{ user.type === 'autónomo' ? 'Autónomo' : user.type === 'credencial' ? 'Credencial' : 'Monotributo' }}
               </span>
             </div>
             

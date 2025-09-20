@@ -12,7 +12,10 @@ import type {
   CreateVepUserDto,
   UpdateVepUserDto,
   PaginatedResponse,
-  DeleteVepUserResponse
+  DeleteVepUserResponse,
+  JobTime,
+  CreateJobTimeDto,
+  UpdateJobTimeDto
 } from '~/types/api'
 
 export const useVepApi = () => {
@@ -216,7 +219,7 @@ export const useVepApi = () => {
     limit: number = 10, 
     search?: string, 
     field?: string, 
-    type?: 'autónomo' | 'credencial'
+    type?: 'autónomo' | 'credencial' | 'monotributo'
   ): Promise<PaginatedResponse<VepUser>> => {
     const params = new URLSearchParams({
       page: page.toString(),
@@ -293,6 +296,123 @@ export const useVepApi = () => {
     return handleApiCall(() => fetch(url, { headers: getAuthHeaders() }))
   }
 
+  // Job Time API functions
+  const createJobTime = async (jobTimeData: CreateJobTimeDto): Promise<JobTime> => {
+    return handleApiCall(() =>
+      fetch(`${baseURL}/job-time`, {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(jobTimeData)
+      })
+    )
+  }
+
+  const getAllJobTimes = async (): Promise<JobTime[]> => {
+    return handleApiCall(() =>
+      fetch(`${baseURL}/job-time`, {
+        headers: getAuthHeaders()
+      })
+    )
+  }
+
+  const getJobTimesPaginated = async (
+    page: number = 1,
+    limit: number = 10,
+    search?: string,
+    field?: string,
+    status?: 'PENDING' | 'FINISHED' | 'RUNNING' | 'ERROR',
+    type?: 'autónomo' | 'credencial' | 'monotributo'
+  ): Promise<PaginatedResponse<JobTime>> => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString()
+    })
+
+    if (search && search.trim()) {
+      params.append('search', search.trim())
+    }
+
+    if (field && field.trim()) {
+      params.append('field', field.trim())
+    }
+
+    if (status) {
+      params.append('status', status)
+    }
+
+    if (type) {
+      params.append('type', type)
+    }
+
+    return handleApiCall(() =>
+      fetch(`${baseURL}/job-time/paginated?${params.toString()}`, {
+        headers: getAuthHeaders()
+      })
+    )
+  }
+
+  const searchJobTimes = async (
+    term: string,
+    field?: string,
+    status?: 'PENDING' | 'FINISHED' | 'RUNNING' | 'ERROR',
+    type?: 'autónomo' | 'credencial' | 'monotributo'
+  ): Promise<JobTime[]> => {
+    const params = new URLSearchParams({
+      term: term.trim()
+    })
+
+    if (field && field.trim()) {
+      params.append('field', field.trim())
+    }
+
+    if (status) {
+      params.append('status', status)
+    }
+
+    if (type) {
+      params.append('type', type)
+    }
+
+    return handleApiCall(() =>
+      fetch(`${baseURL}/job-time/search?${params.toString()}`, {
+        headers: getAuthHeaders()
+      })
+    )
+  }
+
+  const getJobTimeById = async (id: number): Promise<JobTime> => {
+    return handleApiCall(() =>
+      fetch(`${baseURL}/job-time/${id}`, {
+        headers: getAuthHeaders()
+      })
+    )
+  }
+
+  const updateJobTime = async (id: number, jobTimeData: UpdateJobTimeDto): Promise<JobTime> => {
+    return handleApiCall(() =>
+      fetch(`${baseURL}/job-time/${id}`, {
+        method: 'PATCH',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(jobTimeData)
+      })
+    )
+  }
+
+  const deleteJobTime = async (id: number): Promise<boolean> => {
+    return handleApiCall(() =>
+      fetch(`${baseURL}/job-time/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      })
+    )
+  }
+
   return {
     createFolder,
     checkFolderExists,
@@ -312,6 +432,14 @@ export const useVepApi = () => {
     getVepUserById,
     updateVepUser,
     deleteVepUser,
-    searchVepUsers
+    searchVepUsers,
+    // Job Time functions
+    createJobTime,
+    getAllJobTimes,
+    getJobTimesPaginated,
+    searchJobTimes,
+    getJobTimeById,
+    updateJobTime,
+    deleteJobTime
   }
 } 

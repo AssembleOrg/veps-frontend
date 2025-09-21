@@ -1,0 +1,44 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs (se generarán en el contenedor)
+.nuxt
+.output
+.nitro
+.cache
+dist
+.data
+
+# Development files
+.git
+.gitignore
+README.md
+*.md
+
+# IDE
+.vscode
+.idea
+.fleet
+.DS_Store
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Environment files (se pasarán como variables)
+.env
+.env.*
+!.env.example
+
+# Testing
+coverage
+.nyc_output
+
+# Misc
+*.swp
+*.swo
+*~
+

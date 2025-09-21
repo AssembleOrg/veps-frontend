@@ -1,7 +1,8 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
-  devtools: { enabled: true },
+  // Deshabilitar devtools en producción para builds más rápidos
+  devtools: { enabled: process.env.NODE_ENV === 'development' },
 
   css: [
     '~/assets/css/main.css'
@@ -23,5 +24,18 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@nuxt/fonts',
     '@nuxt/ui'
-  ]
+  ],
+
+  // Optimizaciones de build
+  nitro: {
+    compressPublicAssets: true,
+    minify: true,
+  },
+
+  // Optimizaciones de compilación
+  vite: {
+    build: {
+      cssMinify: true,
+    },
+  },
 })

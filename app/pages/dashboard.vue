@@ -46,7 +46,7 @@
             <UDropdownMenu :items="userMenuItems" class="hidden sm:block">
               <template #default="{ open }">
                 <UButton variant="ghost" class="flex items-center space-x-2">
-                  <UAvatar
+                  <UAvatar 
                     :src="`https://ui-avatars.com/api/?name=Usuario&background=3b82f6&color=ffffff`"
                     alt="Usuario"
                     size="sm"
@@ -61,8 +61,8 @@
                       >
                     </template>
                   </ClientOnly>
-                  <UIcon
-                    name="i-heroicons-chevron-down"
+                  <UIcon 
+                    name="i-heroicons-chevron-down" 
                     class="w-4 h-4 transition-transform"
                     :class="{ 'rotate-180': open }"
                   />
@@ -79,15 +79,15 @@
       </div>
 
       <!-- Mobile Menu -->
-      <div
-        v-if="mobileMenuOpen"
+      <div 
+        v-if="mobileMenuOpen" 
         class="sm:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700"
       >
         <div class="px-4 py-3 space-y-2">
           <div
             class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
           >
-            <UAvatar
+            <UAvatar 
               :src="`https://ui-avatars.com/api/?name=Usuario&background=3b82f6&color=ffffff`"
               alt="Usuario"
               size="sm"
@@ -349,7 +349,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Renombrar archivo
-          </h3>
+              </h3>
           <div class="space-y-3">
             <label class="text-sm text-gray-500 dark:text-gray-400"
               >Carpeta</label
@@ -480,7 +480,7 @@
               </p>
               <UButton @click="downloadViewerFile">Descargar archivo</UButton>
             </div>
-          </template>
+            </template>
           <div v-else class="p-6 text-sm text-gray-500 dark:text-gray-400">
             Cargando...
           </div>
@@ -606,7 +606,7 @@
             </h4>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+                <div>
                 <label
                   class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                 >
@@ -668,8 +668,8 @@
                   class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                 >
                   Tipo <span class="text-red-500">*</span>
-                </label>
-                <USelect
+                  </label>
+                  <USelect
                   v-model="userForm.type"
                   :items="['autónomo', 'credencial', 'monotributo']"
                   placeholder="Seleccionar tipo"
@@ -783,28 +783,28 @@
                       <UInput
                         v-model="joinedUser.name"
                         placeholder="Nombre Real del usuario asociado"
-                        class="w-full"
+                    class="w-full"
                         required
                         @input="
                           (event) => handleJoinedUserNameInput(index, event)
                         "
-                      />
-                    </div>
+                  />
+                </div>
 
-                    <div>
+                <div>
                       <label
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                       >
                         CUIT <span class="text-red-500">*</span>
-                      </label>
+                  </label>
                       <UInput
                         v-model="joinedUser.cuit"
                         placeholder="20-87654321-9"
-                        class="w-full"
+                    class="w-full"
                         required
-                      />
-                    </div>
-                  </div>
+                  />
+                </div>
+              </div>
 
                   <div class="flex-shrink-0 pt-8">
                     <UButton
@@ -819,7 +819,7 @@
                   </div>
                 </div>
               </div>
-            </div>
+              </div>
 
             <div
               v-else
@@ -862,21 +862,21 @@
           <div
             class="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700"
           >
-            <UButton
+              <UButton
               variant="outline"
               @click="closeUserModal"
               :disabled="userModalLoading"
             >
               Cancelar
-            </UButton>
+              </UButton>
             <UButton type="submit" :loading="userModalLoading">
               <UIcon name="i-heroicons-check" class="w-4 h-4 mr-2" />
               {{ editingUser ? "Actualizar" : "Crear" }}
             </UButton>
           </div>
-        </form>
+            </form>
       </div>
-    </div>
+        </div>
 
     <!-- Delete Confirmation Modal -->
     <div
@@ -897,7 +897,7 @@
           </div>
           <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">
             Confirmar Eliminación
-          </h3>
+                </h3>
           <p class="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
             ¿Estás seguro de que deseas eliminar al usuario
             <strong>{{ deletingUser?.alter_name }}</strong
@@ -922,12 +922,12 @@
             >
               <UIcon name="i-heroicons-trash" class="w-4 h-4 mr-2" />
               Eliminar
-            </UButton>
+                </UButton>
           </div>
         </div>
       </div>
-    </div>
-
+              </div>
+              
     <!-- Delete Job Time Confirmation Modal -->
     <div
       v-if="showDeleteJobTimeConfirm"
@@ -944,7 +944,7 @@
               name="i-heroicons-exclamation-triangle"
               class="w-8 h-8 text-red-600 dark:text-red-400"
             />
-          </div>
+                    </div>
           <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">
             Confirmar Eliminación de Job Time
           </h3>
@@ -977,10 +977,10 @@
               <UIcon name="i-heroicons-trash" class="w-4 h-4 mr-2" />
               Eliminar
             </UButton>
-          </div>
-        </div>
-      </div>
-    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
     <!-- Job Time Details Modal -->
     <div
@@ -996,15 +996,15 @@
           <div>
             <h3 class="text-xl font-bold text-gray-900 dark:text-white">
               Detalles del Job Time #{{ viewingJobTime?.id }}
-            </h3>
+                </h3>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
               Información completa del trabajo programado
             </p>
           </div>
           <UButton variant="ghost" size="sm" @click="closeJobTimeDetailsModal">
             <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
-          </UButton>
-        </div>
+                </UButton>
+              </div>
 
         <div
           class="p-6 overflow-y-auto max-h-[calc(90vh-140px)]"
@@ -1067,7 +1067,7 @@
                           ? "Finalizado"
                           : "Error"
                       }}
-                    </span>
+                          </span>
                   </div>
                 </div>
 
@@ -1094,12 +1094,12 @@
                           ? "Credencial"
                           : "Monotributo"
                       }}
-                    </span>
-                  </div>
+                          </span>
+                        </div>
                   <p v-else class="text-sm text-gray-500 dark:text-gray-400">
                     Sin tipo especificado
                   </p>
-                </div>
+                      </div>
 
                 <div>
                   <label
@@ -1109,7 +1109,7 @@
                   <p class="text-sm text-gray-900 dark:text-white">
                     {{ formatDateTime(viewingJobTime.created_at) }}
                   </p>
-                </div>
+                    </div>
 
                 <div>
                   <label
@@ -1162,7 +1162,7 @@
                 >
                   <div class="flex items-start justify-between">
                     <div class="flex-1">
-                      <div class="flex items-center space-x-2">
+                    <div class="flex items-center space-x-2">
                         <h5 class="font-medium text-gray-900 dark:text-white">
                           {{ user.alter_name }}
                         </h5>
@@ -1241,10 +1241,10 @@
                 <p class="text-sm text-gray-500 dark:text-gray-400">
                   No hay usuarios asociados
                 </p>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
         <div
           class="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 dark:border-gray-700"
@@ -1272,18 +1272,18 @@
           <div class="flex items-center justify-between mb-6">
             <h3 class="text-lg font-bold text-gray-900 dark:text-white">
               Confirmar Ejecución Inmediata
-            </h3>
+              </h3>
             <UButton variant="ghost" size="sm" @click="cancelExecuteNow">
               <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
             </UButton>
           </div>
-
+              
           <div class="space-y-4">
             <div class="flex items-center space-x-3">
-              <div
+                  <div
                 class="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center"
-              >
-                <UIcon
+                  >
+                      <UIcon
                   name="i-heroicons-exclamation-triangle"
                   class="w-6 h-6 text-orange-600 dark:text-orange-400"
                 />
@@ -1296,9 +1296,9 @@
                   Esta acción enviará inmediatamente los VEPs a
                   {{ matchResults.filter((r) => r.matched).length }} usuarios y
                   no se puede deshacer.
-                </p>
-              </div>
-            </div>
+                        </p>
+                      </div>
+                    </div>
 
             <!-- Resumen de archivos -->
             <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
@@ -1336,12 +1336,29 @@
                 </div>
               </div>
             </div>
+
+            <!-- Campo Caducate -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Vencimiento <span class="text-red-500">*</span>
+              </label>
+              <UInput
+                v-model="executeNowCaducate"
+                placeholder="DD/MM (ej: 25/12)"
+                maxlength="5"
+                class="w-full"
+                required
+              />
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Formato: DD/MM (día/mes)
+              </p>
+            </div>
           </div>
 
           <div class="flex justify-end space-x-3 mt-6">
             <UButton variant="outline" @click="cancelExecuteNow">
               Cancelar
-            </UButton>
+                      </UButton>
             <UButton color="orange" @click="executeNow">
               <UIcon name="i-heroicons-bolt" class="w-4 h-4 mr-2" />
               Sí, Ejecutar Ahora
@@ -1366,8 +1383,8 @@
             </h3>
             <UButton variant="ghost" size="sm" @click="cancelExecuteNowFinal">
               <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
-            </UButton>
-          </div>
+                      </UButton>
+                    </div>
 
           <div class="space-y-4">
             <div
@@ -1447,11 +1464,11 @@
             <UButton color="orange" @click="proceedWithExecution">
               <UIcon name="i-heroicons-bolt" class="w-4 h-4 mr-2" />
               Continuar Solo con Archivos Disponibles
-            </UButton>
+              </UButton>
+          </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
 
     <!-- Edit Job Time Modal -->
     <div
@@ -1467,7 +1484,7 @@
           <div>
             <h3 class="text-xl font-bold text-gray-900 dark:text-white">
               Editar Job Time #{{ editingJobTime?.id }}
-            </h3>
+              </h3>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
               Modifica los detalles del envío programado
             </p>
@@ -1488,18 +1505,18 @@
               </h4>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+              <div>
                   <label
                     class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                   >
                     Carpeta
-                  </label>
+                </label>
                   <UInput
                     v-model="jobTimeEditForm.folder_name"
                     placeholder="Nombre de la carpeta"
-                    class="w-full"
-                  />
-                </div>
+                  class="w-full"
+                />
+              </div>
 
                 <div>
                   <label
@@ -1561,9 +1578,9 @@
                     class="w-full"
                   />
                 </div>
-              </div>
-
-              <div>
+                  </div>
+                  
+                  <div>
                 <label
                   class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                 >
@@ -1674,11 +1691,11 @@
                       class="text-sm font-medium text-blue-800 dark:text-blue-200"
                     >
                       {{ selectedFolder }}
-                    </span>
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-
+                
               <!-- Bottom: User Selection (Expanded) -->
               <div class="space-y-6 flex-1">
                 <div class="flex items-center justify-between">
@@ -1722,20 +1739,40 @@
                         @update:model-value="handleTypeFilterChange"
                       />
                     </div>
-                  </div>
+              </div>
 
-                  <div class="flex items-center justify-between">
-                    <div class="flex gap-2"></div>
+                <div class="flex items-center justify-between">
+                     <div class="flex gap-2">
+                       <!-- Botones de selección -->
+                  <UButton 
+                         variant="outline"
+                         size="sm"
+                         @click="selectAllEnviarUsers"
+                         :disabled="enviarUsersLoading || enviarUsers.length === 0"
+                       >
+                         <UIcon name="i-heroicons-check-circle" class="w-4 h-4 mr-1" />
+                         Seleccionar Todos
+                       </UButton>
+                       <UButton
+                         variant="outline"
+                         size="sm"
+                         @click="deselectAllEnviarUsers"
+                         :disabled="enviarUsersLoading || selectedUsers.size === 0"
+                       >
+                         <UIcon name="i-heroicons-x-circle" class="w-4 h-4 mr-1" />
+                         Deseleccionar Todos
+                       </UButton>
+                     </div>
 
-                    <div v-if="enviarSearchTerm" class="flex items-center">
-                      <UButton
-                        variant="ghost"
-                        size="sm"
+                     <div v-if="enviarSearchTerm" class="flex items-center">
+                  <UButton 
+                    variant="ghost" 
+                    size="sm"
                         @click="clearEnviarSearch"
-                      >
+                  >
                         <UIcon name="i-heroicons-x-mark" class="w-4 h-4 mr-1" />
-                        Limpiar
-                      </UButton>
+                    Limpiar
+                  </UButton>
                     </div>
                   </div>
                 </div>
@@ -1752,7 +1789,7 @@
                     <p class="text-sm text-gray-600 dark:text-gray-400">
                       Cargando usuarios...
                     </p>
-                  </div>
+                      </div>
 
                   <div
                     v-else-if="enviarUsers.length === 0"
@@ -1782,7 +1819,7 @@
                           :model-value="selectedUsers.has(user.id)"
                           @click.stop="toggleUserSelection(user.id)"
                         />
-                        <div class="flex-1 min-w-0">
+                      <div class="flex-1 min-w-0">
                           <div class="flex items-center justify-between">
                             <div>
                               <p
@@ -1818,9 +1855,9 @@
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-
+                      </div>
+                    </div>
+                    
                 <!-- Pagination -->
                 <div
                   v-if="enviarTotalPages > 1"
@@ -1848,7 +1885,7 @@
                     />
                   </div>
                   <div class="flex items-center space-x-2">
-                    <UButton
+                    <UButton 
                       variant="outline"
                       size="sm"
                       :disabled="enviarCurrentPage <= 1"
@@ -1876,9 +1913,9 @@
                         </UButton>
                         <span v-else class="px-2 text-gray-500">...</span>
                       </template>
-                    </div>
+                </div>
 
-                    <UButton
+                <UButton
                       variant="outline"
                       size="sm"
                       :disabled="enviarCurrentPage >= enviarTotalPages"
@@ -1886,12 +1923,12 @@
                     >
                       Siguiente
                       <UIcon name="i-heroicons-chevron-right" class="w-4 h-4" />
-                    </UButton>
-                  </div>
-                </div>
+                </UButton>
               </div>
             </div>
-          </div>
+              </div>
+            </div>
+        </div>
 
           <!-- Step 2: Results -->
           <div v-if="enviarStep === 2" class="p-6">
@@ -1969,11 +2006,11 @@
                             class="w-5 h-5 text-red-600 dark:text-red-400"
                           />
                         </div>
-                      </div>
+              </div>
 
                       <div class="flex-1 min-w-0">
                         <div class="flex items-center justify-between">
-                          <div>
+              <div>
                             <p
                               class="text-sm font-medium text-gray-900 dark:text-white"
                             >
@@ -2156,15 +2193,15 @@
           class="flex items-center justify-between p-6 border-t border-gray-200 dark:border-gray-700"
         >
           <div class="flex items-center space-x-4">
-            <UButton
+              <UButton
               v-if="enviarStep === 2"
               @click="backToSelection"
               variant="outline"
-              size="lg"
-            >
+                size="lg"
+              >
               <UIcon name="i-heroicons-arrow-left" class="w-4 h-4 mr-2" />
               Volver
-            </UButton>
+              </UButton>
             <UButton
               v-if="enviarStep === 3"
               @click="backToResults"
@@ -2174,7 +2211,7 @@
               <UIcon name="i-heroicons-arrow-left" class="w-4 h-4 mr-2" />
               Volver
             </UButton>
-          </div>
+      </div>
 
           <div class="flex items-center space-x-4">
             <UButton @click="closeEnviarModal" variant="outline" size="lg">
@@ -2207,9 +2244,9 @@
               Siguiente
             </UButton>
           </div>
+          </div>
         </div>
-      </div>
-    </div>
+                </div>
 
     <!-- Schedule Modal -->
     <div
@@ -2226,8 +2263,8 @@
             </h3>
             <UButton variant="ghost" size="sm" @click="closeScheduleModal">
               <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
-            </UButton>
-          </div>
+                </UButton>
+              </div>
 
           <div class="space-y-4">
             <!-- Date picker -->
@@ -2296,8 +2333,8 @@
               <p class="text-xs text-blue-600 dark:text-blue-300 mt-1">
                 Vencimiento: {{ scheduleCaducate }}
               </p>
+                </div>
             </div>
-          </div>
 
           <div class="flex justify-end space-x-3 mt-6">
             <UButton
@@ -2440,6 +2477,7 @@ const scheduleCaducate = ref("");
 const schedulingInProgress = ref(false);
 const showExecuteNowConfirm = ref(false);
 const showExecuteNowFinalConfirm = ref(false);
+const executeNowCaducate = ref('');
 
 // Page size options
 const pageSizeOptions = [
@@ -2685,10 +2723,10 @@ watch(
   (val, old) => {
     if (typeof val !== "string") return;
     const cleaned = sanitizeBaseName(val);
-    if (cleaned !== val) {
-      // update without creating infinite loop (only when different)
+  if (cleaned !== val) {
+    // update without creating infinite loop (only when different)
       renameForm.newKey = cleaned;
-    }
+  }
   }
 );
 
@@ -2869,17 +2907,17 @@ watch(
 watch(
   [() => createForm.month, () => createForm.year],
   async ([month, year]) => {
-    if (month && year) {
-      try {
-        // Convertir nombre de mes a número para la API
+  if (month && year) {
+    try {
+      // Convertir nombre de mes a número para la API
         const monthNumber =
           monthOptions.findIndex((m) => m.value === month) + 1;
         const nameInfo = await vepApi.generateFolderName(monthNumber, year);
         previewFolderName.value = nameInfo.folderName;
-      } catch (error) {
+    } catch (error) {
         previewFolderName.value = "";
-      }
     }
+  }
   },
   { immediate: true }
 );
@@ -2906,7 +2944,7 @@ async function logout() {
 
 async function handleCreateFolder() {
   createLoading.value = true;
-
+  
   try {
     // Convertir nombre de mes a número para la API
     const monthNumber =
@@ -2915,7 +2953,7 @@ async function handleCreateFolder() {
       monthNumber,
       createForm.year
     );
-
+    
     if (result.success) {
       toast.add({
         title: "Carpeta creada",
@@ -2951,12 +2989,12 @@ async function loadFolders() {
     const response = await vepApi.listAllFolders();
     folders.value = response.folders;
     totalFolders.value = response.totalCount;
-
+    
     folderOptions.value = [
       { label: "Todas las carpetas", value: null },
       ...response.folders.map((folder) => ({ label: folder, value: folder })),
     ];
-
+    
     // Solo mostrar resultados si estamos en la pestaña de búsqueda
     if (activeTab.value === "search") {
       showResults.value = true;
@@ -3003,7 +3041,7 @@ async function handleSearch() {
     );
     searchResults.value = response.files;
     showResults.value = true;
-
+    
     toast.add({
       title: "Búsqueda completada",
       description: `Encontrados ${response.totalCount} resultados`,
@@ -3046,24 +3084,24 @@ function prepareRename(item: FolderItem) {
 
 async function handleRenameFile() {
   if (!renameForm.oldKey.trim() || !renameForm.newKey.trim()) return;
-
+  
   renameLoading.value = true;
-
+  
   try {
     const result = await vepApi.renameFile(
       renameForm.oldKey,
       renameForm.newKey
     );
-
+    
     toast.add({
       title: "Archivo renombrado",
       description: result.message,
       color: "success",
     });
-
+    
     renameForm.oldKey = "";
     renameForm.newKey = "";
-
+    
     if (selectedFolderContents.value) {
       await loadFolderContents(selectedFolderName.value);
     }
@@ -3138,7 +3176,7 @@ function handleDragLeave(event: DragEvent) {
 function handleDrop(event: DragEvent) {
   event.preventDefault();
   isDragging.value = false;
-
+  
   if (event.dataTransfer?.files) {
     addFiles(Array.from(event.dataTransfer.files));
   }
@@ -3164,7 +3202,7 @@ function addFiles(files: File[]) {
       "image/png",
       "image/gif",
     ];
-
+    
     if (!validTypes.includes(file.type)) {
       toast.add({
         title: "Tipo de archivo no válido",
@@ -3173,7 +3211,7 @@ function addFiles(files: File[]) {
       });
       return false;
     }
-
+    
     if (file.size > 10 * 1024 * 1024) {
       toast.add({
         title: "Archivo muy grande",
@@ -3194,7 +3232,7 @@ function addFiles(files: File[]) {
   );
 
   selectedFiles.value.push(...newFiles);
-
+  
   if (newFiles.length > 0) {
     toast.add({
       title: "Archivos agregados",
@@ -3214,22 +3252,22 @@ function clearFiles() {
 
 async function uploadFiles() {
   if (!uploadForm.targetFolder || selectedFiles.value.length === 0) return;
-
+  
   isUploading.value = true;
-
+  
   try {
     // Simulate upload
     await new Promise((resolve) => setTimeout(resolve, 2000));
-
+    
     toast.add({
       title: "Archivos subidos",
       description: `${selectedFiles.value.length} archivo(s) subido(s) exitosamente`,
       color: "success",
     });
-
+    
     uploadedFiles.value += selectedFiles.value.length;
     clearFiles();
-
+    
     if (selectedFolderContents.value) {
       await loadFolderContents(selectedFolderName.value);
     }
@@ -3830,6 +3868,18 @@ function toggleUserSelection(userId: number) {
   }
 }
 
+function selectAllEnviarUsers() {
+  // Seleccionar todos los usuarios de la página actual
+  enviarUsers.value.forEach(user => {
+    selectedUsers.value.add(user.id);
+  });
+}
+
+function deselectAllEnviarUsers() {
+  // Deseleccionar todos los usuarios
+  selectedUsers.value.clear();
+}
+
 function selectAllUsers() {
   enviarUsers.value.forEach((user) => {
     selectedUsers.value.add(user.id);
@@ -4170,6 +4220,10 @@ async function confirmSchedule() {
 }
 
 function confirmExecuteNow() {
+  // Inicializar caducate con fecha actual
+  const nowBA = DateTime.now().setZone('America/Argentina/Buenos_Aires');
+  executeNowCaducate.value = nowBA.toFormat('dd/MM');
+  
   // Verificar si hay usuarios sin match
   const usersWithoutMatch = matchResults.value.filter((r) => !r.matched);
 
@@ -4184,6 +4238,7 @@ function confirmExecuteNow() {
 
 function cancelExecuteNow() {
   showExecuteNowConfirm.value = false;
+  executeNowCaducate.value = '';
 }
 
 function proceedWithExecution() {
@@ -4194,15 +4249,27 @@ function proceedWithExecution() {
 
 function cancelExecuteNowFinal() {
   showExecuteNowFinalConfirm.value = false;
+  executeNowCaducate.value = '';
 }
 
 async function executeNow() {
+  // Validar caducate
+  if (!executeNowCaducate.value.trim()) {
+    showErrorToast('Error', 'El campo Vencimiento es obligatorio')
+    return
+  }
+  
+  if (!validateCaducate(executeNowCaducate.value)) {
+    showErrorToast('Error', 'El formato de Vencimiento debe ser DD/MM (ej: 25/12)')
+    return
+  }
+
   try {
     // Obtener tiempo actual en timezone Buenos Aires
     const nowBA = DateTime.now().setZone("America/Argentina/Buenos_Aires");
 
-    // Usar caducate por defecto (día/mes actual)
-    const defaultCaducate = nowBA.toFormat("dd/MM");
+    // Usar caducate seleccionado por el usuario
+    const caducateToUse = executeNowCaducate.value || nowBA.toFormat("dd/MM");
 
     // Obtener usuarios con archivos encontrados (verdes y amarillos)
     const matchedUsers = matchResults.value
@@ -4215,7 +4282,7 @@ async function executeNow() {
       executionTimeLocal: nowBA.toFormat("yyyy-MM-dd HH:mm:ss ZZZZ"), // Formato legible con timezone
       timezone: "America/Argentina/Buenos_Aires",
       folderName: selectedFolder.value, // Nombre de la carpeta seleccionada
-      caducate: defaultCaducate, // Campo caducate con fecha actual
+      caducate: caducateToUse, // Campo caducate seleccionado
       users: matchedUsers,
       totalUsers: matchedUsers.length,
       exactMatches: matchResults.value.filter(
@@ -4240,20 +4307,21 @@ async function executeNow() {
               | "monotributo")
           : undefined,
       folder_name: selectedFolder.value,
-      caducate: defaultCaducate, // Campo caducate obligatorio
-      status: "FINISHED" as const,
+      caducate: caducateToUse, // Campo caducate obligatorio
+      status: "PENDING" as const,
     };
 
     await vepApi.createJobTime(jobTimeData);
 
     showSuccessToast(
-      "Ejecución Iniciada",
-      `Enviando ${matchedUsers.length} archivos VEP ahora`
+      "Envío Programado",
+      `El envío de ${matchedUsers.length} archivos VEP se ejecutará en los próximos minutos`
     );
 
     // Cerrar modales y resetear
     showExecuteNowConfirm.value = false;
     showExecuteNowFinalConfirm.value = false;
+    executeNowCaducate.value = '';
     closeEnviarModal();
 
     // Recargar job times si estamos en esa pestaña
@@ -4264,6 +4332,7 @@ async function executeNow() {
     showErrorToast("Error", error.message || "Error al ejecutar el envío");
     showExecuteNowConfirm.value = false;
     showExecuteNowFinalConfirm.value = false;
+    executeNowCaducate.value = '';
   }
 }
 

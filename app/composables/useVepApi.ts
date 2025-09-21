@@ -239,7 +239,7 @@ export const useVepApi = () => {
     }
     
     return handleApiCall(() =>
-      fetch(`${baseURL}/vep-users/paginated?${params.toString()}`, { 
+      fetch(`${baseURL}/vep-users/paginated?page=${page}&limit=${500}&type=${type}`, { 
         headers: getAuthHeaders() 
       })
     )

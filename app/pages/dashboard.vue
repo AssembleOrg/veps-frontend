@@ -275,17 +275,13 @@
           v-if="activeTab === 'users'"
           :users="users"
           :users-loading="usersLoading"
-          :current-page="currentPage"
-          :page-size="pageSize"
           :total-users="totalUsers"
-          :total-pages="totalPages"
           :search-term="searchTerm"
           :search-field="searchField"
           :type-filter="typeFilter"
           :is-searching="isSearching"
           :search-field-options="searchFieldOptions"
           :type-filter-options="typeFilterOptions"
-          :visible-pages="getVisiblePages()"
           @open-user-modal="openUserModal"
           @update:search-term="searchTerm = $event"
           @update:search-field="searchField = $event"
@@ -293,7 +289,6 @@
           @handle-user-search="handleUserSearch"
           @clear-user-search="clearUserSearch"
           @confirm-delete="confirmDelete"
-          @change-page="changePage"
         />
 
         <!-- Enviar VEPs Tab -->
@@ -1624,11 +1619,11 @@
       class="fixed inset-0 z-70 flex items-center justify-center bg-black/60 p-2 sm:p-4"
     >
       <div
-        class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xl w-full max-w-[95vw] h-[95vh] overflow-hidden"
+        class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xl w-full max-w-[95vw] max-h-[90vh] sm:h-[95vh] overflow-hidden flex flex-col"
       >
         <!-- Modal Header -->
         <div
-          class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700"
+          class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0"
         >
           <div>
             <h3 class="text-xl font-bold text-gray-900 dark:text-white">
@@ -1656,10 +1651,10 @@
         </div>
 
         <!-- Modal Content -->
-        <div class="flex-1 overflow-y-auto">
+        <div class="flex-1 overflow-hidden flex flex-col">
           <!-- Step 1: Selection -->
-          <div v-if="enviarStep === 1" class="p-4 sm:p-6">
-            <div class="space-y-6">
+          <div v-if="enviarStep === 1" class="p-4 sm:p-6 flex flex-col flex-1 min-h-0">
+            <div class="space-y-6 flex flex-col flex-1 min-h-0">
               <!-- Top: Folder Selection (Compact) -->
               <div class="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg">
                 <h4
@@ -1697,8 +1692,8 @@
                 </div>
                 
               <!-- Bottom: User Selection (Expanded) -->
-              <div class="space-y-6 flex-1">
-                <div class="flex items-center justify-between">
+              <div class="space-y-4 flex flex-col flex-1 min-h-0">
+                <div class="flex items-center justify-between flex-shrink-0">
                   <h4
                     class="text-lg font-semibold text-gray-900 dark:text-white"
                   >
@@ -1710,7 +1705,7 @@
                 </div>
 
                 <!-- Search and Filters -->
-                <div class="space-y-4">
+                <div class="space-y-4 flex-shrink-0">
                   <div class="flex flex-col sm:flex-row gap-4">
                     <div class="flex-1">
                       <UInput
@@ -1779,7 +1774,7 @@
 
                 <!-- Users List -->
                 <div
-                  class="border border-gray-200 dark:border-gray-700 rounded-lg max-h-[60vh] overflow-y-auto"
+                  class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-y-auto flex-1 min-h-0"
                 >
                   <div v-if="enviarUsersLoading" class="p-8 text-center">
                     <UIcon
@@ -1863,77 +1858,18 @@
                   v-if="enviarTotalPages > 1"
                   class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-gray-200 dark:border-gray-700"
                 >
-                  <div class="flex flex-col sm:flex-row items-center gap-4">
-                    <div class="text-sm text-gray-700 dark:text-gray-300">
-                      Mostrando
-                      {{ (enviarCurrentPage - 1) * enviarPageSize + 1 }} a
-                      {{
-                        Math.min(
-                          enviarCurrentPage * enviarPageSize,
-                          enviarTotalUsers
-                        )
-                      }}
-                      de {{ enviarTotalUsers }} usuarios
-                    </div>
-                    <USelect
-                      v-model="enviarPageSize"
-                      :items="pageSizeOptions"
-                      class="w-36"
-                      value-attribute="value"
-                      option-attribute="label"
-                      @update:model-value="handleEnviarPageSizeChange"
-                    />
+                  <div class="text-sm text-gray-600 dark:text-gray-400">
+                    {{ enviarTotalUsers }} usuarios
                   </div>
-                  <div class="flex items-center space-x-2">
-                    <UButton 
-                      variant="outline"
-                      size="sm"
-                      :disabled="enviarCurrentPage <= 1"
-                      @click="changeEnviarPage(enviarCurrentPage - 1)"
-                    >
-                      <UIcon name="i-heroicons-chevron-left" class="w-4 h-4" />
-                      Anterior
-                    </UButton>
-
-                    <div class="flex items-center space-x-1">
-                      <template
-                        v-for="page in getEnviarVisiblePages()"
-                        :key="page"
-                      >
-                        <UButton
-                          v-if="page !== '...'"
-                          :variant="
-                            page === enviarCurrentPage ? 'solid' : 'outline'
-                          "
-                          size="sm"
-                          @click="changeEnviarPage(page)"
-                          class="min-w-[2rem]"
-                        >
-                          {{ page }}
-                        </UButton>
-                        <span v-else class="px-2 text-gray-500">...</span>
-                      </template>
-                </div>
-
-                <UButton
-                      variant="outline"
-                      size="sm"
-                      :disabled="enviarCurrentPage >= enviarTotalPages"
-                      @click="changeEnviarPage(enviarCurrentPage + 1)"
-                    >
-                      Siguiente
-                      <UIcon name="i-heroicons-chevron-right" class="w-4 h-4" />
-                </UButton>
-              </div>
             </div>
               </div>
             </div>
         </div>
 
           <!-- Step 2: Results -->
-          <div v-if="enviarStep === 2" class="p-6">
-            <div class="space-y-6">
-              <div class="flex items-center justify-between">
+          <div v-if="enviarStep === 2" class="p-6 flex flex-col flex-1 min-h-0">
+            <div class="space-y-4 flex flex-col flex-1 min-h-0">
+              <div class="flex items-center justify-between flex-shrink-0">
                 <h4 class="text-lg font-semibold text-gray-900 dark:text-white">
                   Resultados del Matcheo
                 </h4>
@@ -1964,7 +1900,7 @@
 
               <!-- Results List -->
               <div
-                class="border border-gray-200 dark:border-gray-700 rounded-lg max-h-[70vh] overflow-y-auto"
+                class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-y-auto flex-1 min-h-0"
               >
                 <div class="divide-y divide-gray-200 dark:divide-gray-700">
                   <div
@@ -2190,7 +2126,7 @@
 
         <!-- Modal Footer -->
         <div
-          class="flex items-center justify-between p-6 border-t border-gray-200 dark:border-gray-700"
+          class="flex items-center justify-between p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-900"
         >
           <div class="flex items-center space-x-4">
               <UButton
@@ -2497,8 +2433,8 @@ const searchFieldOptions = [
   "CUIT",
 ];
 
-const searchFieldMap = {
-  "Todos los campos": "",
+const searchFieldMap: Record<string, string | undefined> = {
+  "Todos los campos": undefined,
   "Nombre real": "real_name",
   "Nombre alternativo": "alter_name",
   "Teléfono móvil": "mobile_number",
@@ -2878,26 +2814,50 @@ watch(activeTab, async (newTab, oldTab) => {
   }
 });
 
-// Watch pageSize changes
+
+
+// Watch typeFilter changes (Users Tab)
 watch(
-  pageSize,
-  async (newSize, oldSize) => {
-    console.log("PageSize watcher triggered:", oldSize, "->", newSize);
-    if (oldSize !== newSize && activeTab.value === "users") {
-      currentPage.value = 1;
+  typeFilter,
+  async (newValue, oldValue) => {
+    if (oldValue !== undefined && newValue !== oldValue && activeTab.value === "users") {
+      console.log("typeFilter changed:", oldValue, "->", newValue);
       await loadUsers();
     }
   },
   { immediate: false }
 );
 
-// Watch enviarPageSize changes
+// Watch searchField changes (Users Tab)
 watch(
-  enviarPageSize,
-  async (newSize, oldSize) => {
-    console.log("EnviarPageSize watcher triggered:", oldSize, "->", newSize);
-    if (oldSize !== newSize && showEnviarModal.value) {
-      enviarCurrentPage.value = 1;
+  searchField,
+  async (newValue, oldValue) => {
+    if (oldValue !== undefined && newValue !== oldValue && activeTab.value === "users") {
+      console.log("searchField changed:", oldValue, "->", newValue);
+      await loadUsers();
+    }
+  },
+  { immediate: false }
+);
+
+// Watch enviarTypeFilter changes (Enviar Modal)
+watch(
+  enviarTypeFilter,
+  async (newValue, oldValue) => {
+    if (oldValue !== undefined && newValue !== oldValue && showEnviarModal.value) {
+      console.log("enviarTypeFilter changed:", oldValue, "->", newValue);
+      await loadEnviarUsers();
+    }
+  },
+  { immediate: false }
+);
+
+// Watch enviarSearchField changes (Enviar Modal)
+watch(
+  enviarSearchField,
+  async (newValue, oldValue) => {
+    if (oldValue !== undefined && newValue !== oldValue && showEnviarModal.value) {
+      console.log("enviarSearchField changed:", oldValue, "->", newValue);
       await loadEnviarUsers();
     }
   },
@@ -3792,7 +3752,6 @@ function resetEnviarFilters() {
   enviarSearchTerm.value = "";
   enviarSearchField.value = "Todos los campos";
   enviarTypeFilter.value = "Credencial";
-  enviarCurrentPage.value = 1;
 }
 
 async function loadFoldersForEnviar() {
@@ -3818,21 +3777,30 @@ async function loadEnviarUsers() {
   enviarUsersLoading.value = true;
 
   try {
-    const fieldValue = searchFieldMap[enviarSearchField.value] || undefined;
-    const typeValue = typeFilterMap[enviarTypeFilter.value] || undefined;
+    const fieldValue = searchFieldMap[enviarSearchField.value];
+    const typeValue = typeFilterMap[enviarTypeFilter.value];
     const searchValue = enviarSearchTerm.value.trim() || undefined;
 
-    const response = await vepApi.getVepUsersPaginated(
-      enviarCurrentPage.value,
-      enviarPageSize.value,
+    console.log('loadEnviarUsers - Filtros:', {
+      search: searchValue,
+      field: fieldValue,
+      type: typeValue,
+      enviarSearchField: enviarSearchField.value,
+      enviarTypeFilter: enviarTypeFilter.value
+    });
+
+    // Obtener todos los usuarios filtrados
+    const allUsers = await vepApi.getVepUsersFiltered(
       searchValue,
       fieldValue,
       typeValue as "autónomo" | "credencial" | "monotributo" | undefined
     );
 
-    enviarUsers.value = response.data;
-    enviarTotalUsers.value = response.total;
-    enviarTotalPages.value = response.totalPages;
+    console.log('loadEnviarUsers - Usuarios recibidos:', allUsers.length);
+
+    // Mostrar todos los usuarios sin paginación
+    enviarUsers.value = allUsers;
+    enviarTotalUsers.value = allUsers.length;
   } catch (error: any) {
     showErrorToast("Error", error.message || "Error al cargar usuarios");
   } finally {
@@ -3848,7 +3816,6 @@ function handleEnviarSearch() {
   }
 
   enviarSearchTimeout = setTimeout(async () => {
-    enviarCurrentPage.value = 1;
     enviarIsSearching.value = true;
     await loadEnviarUsers();
     enviarIsSearching.value = false;
@@ -3868,11 +3835,34 @@ function toggleUserSelection(userId: number) {
   }
 }
 
-function selectAllEnviarUsers() {
-  // Seleccionar todos los usuarios de la página actual
-  enviarUsers.value.forEach(user => {
-    selectedUsers.value.add(user.id);
-  });
+async function selectAllEnviarUsers() {
+  try {
+    // Obtener todos los usuarios con los filtros actuales (sin paginación)
+    const fieldValue = searchFieldMap[enviarSearchField.value];
+    const typeValue = typeFilterMap[enviarTypeFilter.value];
+    const searchValue = enviarSearchTerm.value.trim() || undefined;
+
+    const allUsers = await vepApi.getVepUsersFiltered(
+      searchValue,
+      fieldValue,
+      typeValue as "autónomo" | "credencial" | "monotributo" | undefined
+    );
+
+    // Seleccionar todos los usuarios obtenidos
+    allUsers.forEach(user => {
+      selectedUsers.value.add(user.id);
+    });
+
+    showSuccessToast(
+      "Usuarios Seleccionados",
+      `Se han seleccionado ${allUsers.length} usuarios con el filtro actual`
+    );
+  } catch (error: any) {
+    showErrorToast(
+      "Error al Seleccionar",
+      error.message || "No se pudieron seleccionar todos los usuarios"
+    );
+  }
 }
 
 function deselectAllEnviarUsers() {
@@ -3899,27 +3889,14 @@ async function handleTypeFilterChange() {
       )
     ) {
       selectedUsers.value.clear();
-      enviarCurrentPage.value = 1;
       await loadEnviarUsers();
     } else {
       // Revertir el cambio si el usuario cancela
       return;
     }
   } else {
-    enviarCurrentPage.value = 1;
     await loadEnviarUsers();
   }
-}
-
-function changeEnviarPage(page: number) {
-  enviarCurrentPage.value = page;
-  loadEnviarUsers();
-}
-
-async function handleEnviarPageSizeChange() {
-  console.log("Enviar page size changed to:", enviarPageSize.value);
-  enviarCurrentPage.value = 1;
-  await loadEnviarUsers();
 }
 
 function getEnviarVisiblePages() {
@@ -4347,28 +4324,37 @@ async function loadUsers() {
   usersLoading.value = true;
 
   try {
-    // Usar siempre el endpoint paginado con todos los filtros
-    const fieldValue = searchFieldMap[searchField.value] || undefined;
-    const typeValue = typeFilterMap[typeFilter.value] || undefined;
+    // Usar el endpoint filtrado (sin paginación) y hacer paginación del lado del cliente
+    const fieldValue = searchFieldMap[searchField.value];
+    const typeValue = typeFilterMap[typeFilter.value];
     const searchValue = searchTerm.value.trim() || undefined;
 
-    const response = await vepApi.getVepUsersPaginated(
-      currentPage.value,
-      pageSize.value,
+    console.log('loadUsers - Filtros:', {
+      search: searchValue,
+      field: fieldValue,
+      type: typeValue,
+      searchField: searchField.value,
+      typeFilter: typeFilter.value
+    });
+
+    // Obtener todos los usuarios filtrados
+    const allUsers = await vepApi.getVepUsersFiltered(
       searchValue,
       fieldValue,
       typeValue as "autónomo" | "credencial" | "monotributo" | undefined
     );
 
-    users.value = response.data;
-    totalUsers.value = response.total;
-    totalPages.value = response.totalPages;
+    console.log('loadUsers - Usuarios recibidos:', allUsers.length);
+
+    // Mostrar todos los usuarios sin paginación
+    users.value = allUsers;
+    totalUsers.value = allUsers.length;
 
     console.log(
       "Users loaded:",
-      response.data.length,
+      users.value.length,
       "users, total:",
-      response.total,
+      totalUsers.value,
       "with filters:",
       {
         search: searchValue,
@@ -4410,7 +4396,6 @@ function clearUserSearch() {
   searchTerm.value = "";
   searchField.value = "Todos los campos";
   typeFilter.value = "Todos los tipos";
-  currentPage.value = 1;
   loadUsers();
 }
 
@@ -4622,7 +4607,9 @@ async function handleSaveUser() {
 
   try {
     if (editingUser.value) {
-      const formWithOutId = {
+      // Construir objeto solo con campos permitidos, excluyendo explícitamente id y otros campos de solo lectura
+      const { id, ...userFormWithoutId } = userForm as any;
+      const formWithOutId: UpdateVepUserDto = {
         alter_name: userForm.alter_name,
         real_name: userForm.real_name,
         mobile_number: userForm.mobile_number,
@@ -4730,46 +4717,8 @@ function confirmDelete(user: VepUser) {
   showDeleteConfirm.value = true;
 }
 
-function changePage(page: number) {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page;
-    loadUsers();
-  }
-}
-
 function getVisiblePages() {
-  const pages = [];
-  const total = totalPages.value;
-  const current = currentPage.value;
-
-  if (total <= 7) {
-    for (let i = 1; i <= total; i++) {
-      pages.push(i);
-    }
-  } else {
-    pages.push(1);
-
-    if (current <= 4) {
-      for (let i = 2; i <= 5; i++) {
-        pages.push(i);
-      }
-      pages.push("...");
-      pages.push(total);
-    } else if (current >= total - 3) {
-      pages.push("...");
-      for (let i = total - 4; i <= total; i++) {
-        pages.push(i);
-      }
-    } else {
-      pages.push("...");
-      for (let i = current - 1; i <= current + 1; i++) {
-        pages.push(i);
-      }
-      pages.push("...");
-      pages.push(total);
-    }
-  }
-
-  return pages;
+  // Función mantenida para compatibilidad, pero ya no se usa (sin paginación)
+  return [];
 }
 </script>

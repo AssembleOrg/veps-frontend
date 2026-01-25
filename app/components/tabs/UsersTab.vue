@@ -227,48 +227,10 @@
           </div>
         </div>
 
-        <!-- Pagination -->
-        <div v-if="!searchTerm.trim()" class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <div class="flex flex-col sm:flex-row items-center gap-4">
-            <div class="text-sm text-gray-700 dark:text-gray-300">
-              Mostrando {{ (currentPage - 1) * pageSize + 1 }} a {{ Math.min(currentPage * pageSize, totalUsers) }} de {{ totalUsers }} usuarios
-            </div>
-          </div>
-          <div class="flex items-center space-x-2">
-            <UButton
-              variant="outline"
-              size="sm"
-              :disabled="currentPage <= 1"
-              @click="$emit('change-page', currentPage - 1)"
-            >
-              <UIcon name="i-heroicons-chevron-left" class="w-4 h-4" />
-              Anterior
-            </UButton>
-            
-            <div class="flex items-center space-x-1">
-              <template v-for="page in visiblePages" :key="page">
-                <UButton
-                  v-if="page !== '...'"
-                  :variant="page === currentPage ? 'solid' : 'outline'"
-                  size="sm"
-                  @click="$emit('change-page', page)"
-                  class="min-w-[2rem]"
-                >
-                  {{ page }}
-                </UButton>
-                <span v-else class="px-2 text-gray-500">...</span>
-              </template>
-            </div>
-            
-            <UButton
-              variant="outline"
-              size="sm"
-              :disabled="currentPage >= totalPages"
-              @click="$emit('change-page', currentPage + 1)"
-            >
-              Siguiente
-              <UIcon name="i-heroicons-chevron-right" class="w-4 h-4" />
-            </UButton>
+        <!-- Total Users Info -->
+        <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div class="text-sm text-gray-700 dark:text-gray-300 text-center">
+            {{ totalUsers }} usuarios
           </div>
         </div>
       </div>
@@ -302,17 +264,13 @@ import type { VepUser } from '~/types/api'
 interface Props {
   users: VepUser[]
   usersLoading: boolean
-  currentPage: number
-  pageSize: number
   totalUsers: number
-  totalPages: number
   searchTerm: string
   searchField: string
   typeFilter: string
   isSearching: boolean
   searchFieldOptions: Array<{ label: string; value: string }>
   typeFilterOptions: Array<{ label: string; value: string }>
-  visiblePages: (number | string)[]
 }
 
 const props = defineProps<Props>()
@@ -326,6 +284,5 @@ const emit = defineEmits<{
   'handle-user-search': []
   'clear-user-search': []
   'confirm-delete': [user: VepUser]
-  'change-page': [page: number]
 }>()
 </script>

@@ -43,6 +43,23 @@ export const useVepApi = () => {
         const errorData = await response.json().catch(() => ({}))
         
         switch (response.status) {
+          case 401:
+            // Token expirado o no autorizado - limpiar sesión y redirigir al login
+            console.warn('[useVepApi] 401 Unauthorized - cerrando sesión')
+            try {
+              await (auth as any).signOut()
+            } catch (signOutError) {
+              console.error('[useVepApi] Error al cerrar sesión:', signOutError)
+              // Forzar redirección manual si signOut falla
+              try {
+                localStorage.clear()
+                sessionStorage.clear()
+                window.location.replace('/login')
+              } catch (e) {
+                console.error('[useVepApi] Error al redirigir:', e)
+              }
+            }
+            throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.')
           case 400:
             throw new Error(`Parámetros inválidos: ${errorData.message || 'Error de validación'}`)
           case 404:
@@ -162,6 +179,19 @@ export const useVepApi = () => {
       const url = `${baseURLDigitalOcean}/files/download-by-key?key=${encodeURIComponent(key)}`
       const res = await fetch(url, { headers: getAuthHeaders() })
       if (!res.ok) {
+        if (res.status === 401) {
+          // Token expirado - limpiar sesión y redirigir al login
+          console.warn('[useVepApi] 401 Unauthorized en downloadFileByKey - cerrando sesión')
+          try {
+            await (auth as any).signOut()
+          } catch (signOutError) {
+            console.error('[useVepApi] Error al cerrar sesión:', signOutError)
+            localStorage.clear()
+            sessionStorage.clear()
+            window.location.replace('/login')
+          }
+          throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.')
+        }
         if (res.status === 404) throw new Error('Archivo no encontrado (404)')
         const err = await res.json().catch(() => ({ message: `Error ${res.status}` }))
         throw new Error(err.message || `Error ${res.status}`)
@@ -180,6 +210,19 @@ export const useVepApi = () => {
       const url = `${baseURLDigitalOcean}/files/download?${q}`
       const res = await fetch(url, { headers: getAuthHeaders() })
       if (!res.ok) {
+        if (res.status === 401) {
+          // Token expirado - limpiar sesión y redirigir al login
+          console.warn('[useVepApi] 401 Unauthorized en downloadFileByName - cerrando sesión')
+          try {
+            await (auth as any).signOut()
+          } catch (signOutError) {
+            console.error('[useVepApi] Error al cerrar sesión:', signOutError)
+            localStorage.clear()
+            sessionStorage.clear()
+            window.location.replace('/login')
+          }
+          throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.')
+        }
         if (res.status === 404) throw new Error('Archivo no encontrado (404)')
         const err = await res.json().catch(() => ({ message: `Error ${res.status}` }))
         throw new Error(err.message || `Error ${res.status}`)
@@ -200,7 +243,19 @@ export const useVepApi = () => {
       const url = `${baseURL}/qr?secret=${encodeURIComponent(secret)}`
       const res = await fetch(url, { headers: getAuthHeaders() })
       if (!res.ok) {
-        if (res.status === 401) throw new Error('No autorizado para obtener el código QR')
+        if (res.status === 401) {
+          // Token expirado - limpiar sesión y redirigir al login
+          console.warn('[useVepApi] 401 Unauthorized en getQrCode - cerrando sesión')
+          try {
+            await (auth as any).signOut()
+          } catch (signOutError) {
+            console.error('[useVepApi] Error al cerrar sesión:', signOutError)
+            localStorage.clear()
+            sessionStorage.clear()
+            window.location.replace('/login')
+          }
+          throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.')
+        }
         const err = await res.json().catch(() => ({ message: `Error ${res.status}` }))
         throw new Error(err.message || `Error ${res.status}`)
       }
@@ -213,7 +268,39 @@ export const useVepApi = () => {
 
   // 👥 VEP Users API Functions
   
-  // Obtener usuarios paginados con búsqueda y filtros integrados
+  // Obtener usuarios filtrados (sin paginación)
+  const getVepUsersFiltered = async (
+    search?: string, 
+    field?: string, 
+    type?: 'autónomo' | 'credencial' | 'monotributo'
+  ): Promise<VepUser[]> => {
+    const params = new URLSearchParams()
+    
+    if (search && search.trim()) {
+      params.append('search', search.trim())
+    }
+    
+    if (field && field.trim()) {
+      params.append('field', field.trim())
+    }
+    
+    if (type) {
+      params.append('type', type)
+    }
+    
+    const queryString = params.toString()
+    const url = queryString 
+      ? `${baseURL}/vep-users/filtered?${queryString}`
+      : `${baseURL}/vep-users/filtered`
+    
+    return handleApiCall(() =>
+      fetch(url, { 
+        headers: getAuthHeaders() 
+      })
+    )
+  }
+
+  // Obtener usuarios paginados con búsqueda y filtros integrados (DEPRECATED - usar getVepUsersFiltered)
   const getVepUsersPaginated = async (
     page: number = 1, 
     limit: number = 10, 
@@ -239,7 +326,7 @@ export const useVepApi = () => {
     }
     
     return handleApiCall(() =>
-      fetch(`${baseURL}/vep-users/paginated?page=${page}&limit=${500}&type=${type}`, { 
+      fetch(`${baseURL}/vep-users/paginated?${params.toString()}`, { 
         headers: getAuthHeaders() 
       })
     )
@@ -427,6 +514,7 @@ export const useVepApi = () => {
     downloadFileByName,
     getQrCode,
     // VEP Users functions
+    getVepUsersFiltered,
     getVepUsersPaginated,
     createVepUser,
     getVepUserById,
